@@ -78,6 +78,9 @@
   .rank1{background:#0e1a16}
   .rank1 .sym{color:var(--gold2)}
   .metainfo td{background:#080d15}
+  .buy-links{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding-top:8px;border-top:1px dashed #16202f}
+  .plat-mini{font-size:11px;color:var(--gold2);border:1px solid var(--line2);border-radius:6px;padding:3px 9px;text-decoration:none;background:#0e1726;transition:.15s}
+  .plat-mini:hover{border-color:var(--gold);background:#0e1a16}
   /* plataformas */
   a.plat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 13px;border:1px solid var(--line2);border-radius:9px;background:var(--panel2);text-decoration:none;color:var(--txt);transition:.15s}
   a.plat:hover{border-color:var(--gold);background:#0e1726;transform:translateY(-1px)}
@@ -155,6 +158,8 @@
     <div id="tbl"></div>
     <div class="section-title" style="margin-top:20px"><span>🥇 Top 5 metales <b>· oro/plata tokenizados en vivo</b></span><span id="metalesStat"></span></div>
     <div id="metalesBox"></div>
+    <div class="section-title" style="margin-top:20px"><span>🏢 Top 5 empresas <b>· acciones tokenizadas en vivo</b></span><span id="stocksStat"></span></div>
+    <div id="stocksBox"></div>
   </div>
 
   <div class="side">
@@ -261,6 +266,25 @@ const METAL_INFO = {
   AGLD:  'Aavegotchi LAND · NO es metal (token de juego); excluido de score',
   WELL:  'Wellfield · NO es metal (DeFi); excluido de score'
 };
+// acciones tokenizadas (stock tokens) que cotizan en Binance + descripción
+const STOCKS = new Set(['TSLA','AAPL','MSFT','NVDA','GOOGL','AMZN','META','COIN','NFLX','BABA','AMD','INTC','FB','TSM','ORCL']);
+const STOCK_INFO = {
+  TSLA:  'Tesla Inc. · vehículos eléctricos y energía',
+  AAPL:  'Apple Inc. · hardware, software y servicios',
+  MSFT:  'Microsoft · software, nube (Azure) y LinkedIn',
+  NVDA:  'NVIDIA · GPUs y computación de IA',
+  GOOGL: 'Alphabet · Google, publicidad, nube y Android',
+  AMZN:  'Amazon · e-commerce y AWS (nube)',
+  META:  'Meta Platforms · Facebook, Instagram, Reality Labs',
+  COIN:  'Coinbase · exchange de cripto (acciones)',
+  NFLX:  'Netflix · streaming de video',
+  BABA:  'Alibaba · e-commerce y nube en China',
+  AMD:   'Advanced Micro Devices · CPUs/GPUs',
+  INTC:  'Intel · semiconductores',
+  FB:    'Meta Platforms (antes Facebook)',
+  TSM:   'TSMC · fundición de semiconductores',
+  ORCL:  'Oracle · bases de datos y nube'
+};
 let cgMap = {}; // symbol.toUpperCase() -> coinGecko object (enriquecido en load)
 const pct = x => (x==null?0:x);
 let RATE_MXN=0; // tipo de cambio USD->MXN (vivo)
@@ -365,7 +389,14 @@ async function load(){
   CURRENT=scored;
   renderKPIs(scored,scored.length);
   renderTable(scored.slice(0,10));
-  await renderMetales(scored);
+  // Top 5 (metales/empresas) aislados: un fallo de fetch nunca vacía el ranking/chart
+  try{
+    await renderMetales(scored);
+    renderMetalesLinks();
+  }catch(e){ console.warn('metales:',e.message); document.getElementById('metalesBox').innerHTML='<div class="err" style="font-size:12px;color:var(--dim)">⚠ No se pudieron cargar metales ahora. Reintentando…</div>'; }
+  try{
+    await renderStocks(scored);
+  }catch(e){ console.warn('empresas:',e.message); document.getElementById('stocksBox').innerHTML='<div class="err" style="font-size:12px;color:var(--dim)">⚠ No se pudieron cargar empresas ahora. Reintentando…</div>'; }
   pushRT(scored);
   drawRT(true);
   document.getElementById('clock').textContent=new Date().toLocaleString('es-MX');
@@ -455,12 +486,12 @@ async function renderMetales(initial){
   const box=document.getElementById('metalesBox');
   const stat=document.getElementById('metalesStat');
   // construir lista: los del universo principal + completar hasta 5 con fetch dedicado
-  let list=initial.filter(d=>METALS.has((d.symbol||'').toUpperCase())).slice(0,5);
+  let list=(initial&&initial.length?initial:LAST_GOOD||[]).filter(d=>METALS.has((d.symbol||'').toUpperCase())).slice(0,5);
   if(list.length<5){
     try{
       const extra=await fetchMetals();
-      for(const m of extra){ if(list.length>=5) break; if(!list.some(x=>x.symbol.toUpperCase()===m.symbol.toUpperCase())) list.push(m); }
-    }catch(e){ /* silencioso: usa lo que haya */ }
+      for(const m of extra){ if(list.length>=5) break; if(!list.some(x=>x.symbol.toUpperCase().replace('USDT','')===m.symbol.toUpperCase())) list.push(m); }
+    }catch(e){ /* usa snapshot si hay */ if(LAST_GOOD&&!list.length) list=LAST_GOOD.filter(d=>METALS.has((d.symbol||'').toUpperCase())).slice(0,5); }
   }
   if(!list.length){
     box.innerHTML='<div class="err" style="font-size:12px;color:var(--dim)">⚠ No hay metales tokenizados (XAUT/PAXG/XAG) listados en Binance ahora. Aparecen en vivo cuando hay liquidez.</div>';
@@ -513,8 +544,86 @@ async function fetchMetals(){
     }));
   return scoreUniverse(rows);
 }
-
-// ---- Chart en tiempo real (serie 24h vía /market_chart, CORS abierto) ----
+// Fetch dedicado de acciones tokenizadas en Binance para completar el Top 5
+async function fetchStocks(){
+  const r=await fetchJSON('https://api.binance.com/api/v3/ticker/24hr',9000);
+  if(!r.ok) throw new Error('Binance stocks HTTP '+r.status);
+  const all=await r.json();
+  const rows=all.filter(x=>x.symbol.endsWith('USDT') && STOCKS.has(x.symbol.replace('USDT','').toUpperCase()))
+    .map(x=>({
+      symbol:x.symbol.replace('USDT',''), name:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).name||x.symbol.replace('USDT',''),
+      id:x.symbol.toLowerCase(), current_price:parseFloat(x.lastPrice),
+      market_cap:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).market_cap||null,
+      market_cap_rank:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).market_cap_rank||null,
+      total_volume:parseFloat(x.quoteVolume), high_24h:parseFloat(x.highPrice), low_24h:parseFloat(x.lowPrice),
+      price_change_percentage_24h_in_currency:parseFloat(x.priceChangePercent),
+      price_change_percentage_1h_in_currency:null,
+      price_change_percentage_7d_in_currency:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).price_change_percentage_7d_in_currency||null,
+      price_change_percentage_30d_in_currency:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).price_change_percentage_30d_in_currency||null
+    }));
+  return scoreUniverse(rows);
+}
+async function renderStocks(initial){
+  const box=document.getElementById('stocksBox');
+  const stat=document.getElementById('stocksStat');
+  let list=(initial&&initial.length?initial:LAST_GOOD||[]).filter(d=>STOCKS.has((d.symbol||'').toUpperCase())).slice(0,5);
+  if(list.length<5){
+    try{
+      const extra=await fetchStocks();
+      for(const m of extra){ if(list.length>=5) break; if(!list.some(x=>x.symbol.toUpperCase().replace('USDT','')===m.symbol.toUpperCase())) list.push(m); }
+    }catch(e){ /* usa snapshot si hay */ if(LAST_GOOD&&!list.length) list=LAST_GOOD.filter(d=>STOCKS.has((d.symbol||'').toUpperCase())).slice(0,5); }
+  }
+  if(!list.length){
+    box.innerHTML='<div class="err" style="font-size:12px;color:var(--dim)">⚠ No hay acciones tokenizadas (TSLA/AAPL/NVDA…) listadas en Binance ahora. Aparecen en vivo cuando hay liquidez.</div>';
+    stat.textContent=''; return;
+  }
+  const maxScore=Math.max(...list.map(d=>d.score100||0));
+  let html='<table><thead><tr>'+
+    '<th class="l">#</th><th class="l">Empresa</th><th>Precio</th><th>24h</th><th>7d</th><th>30d</th>'+
+    '<th>Mom (z)</th><th>Riesgo</th><th>Score</th></tr></thead><tbody>';
+  list.forEach((d,i)=>{
+    const sym=d.symbol.toUpperCase();
+    const c24=pct(d.price_change_percentage_24h_in_currency);
+    const c7=pct(d.price_change_percentage_7d_in_currency);
+    const c30=pct(d.price_change_percentage_30d_in_currency);
+    const riskColor=d.risk>6?'var(--red)':(d.risk>3?'var(--gold)':'var(--green)');
+    const info=STOCK_INFO[sym]||'';
+    html+='<tr'+(i===0?' class="rank1"':'')+'>'+
+      '<td class="rank">'+(i+1)+'</td>'+
+      '<td class="l"><span class="sym">'+sym+'<small>'+(d.name?d.name:'')+'</small></span></td>'+
+      '<td><div>$'+d.current_price.toLocaleString('en-US',{maximumFractionDigits:d.current_price<1?4:2})+'</div><div style="font-size:10px;color:var(--muted)">'+fmtMXN(d.current_price)+'</div></td>'+
+      '<td class="'+(c24>=0?'up':'down')+'">'+(c24>=0?'+':'')+c24.toFixed(2)+'%</td>'+
+      '<td class="'+(c7>=0?'up':'down')+'">'+(c7>=0?'+':'')+c7.toFixed(2)+'%</td>'+
+      '<td class="'+(c30>=0?'up':'down')+'">'+(c30>=0?'+':'')+c30.toFixed(2)+'%</td>'+
+      '<td>'+(d.m>=0?'+':'')+d.m.toFixed(2)+'</td>'+
+      '<td>'+bar(d.risk*10,riskColor)+' <span style="font-size:11px">'+d.risk.toFixed(1)+'</span></td>'+
+      '<td class="scorecell">'+d.score100.toFixed(1)+'</td>'+
+    '</tr>';
+    if(info) html+='<tr class="metainfo"><td></td><td colspan="8" style="font-size:10.5px;color:var(--dim);padding:2px 10px 8px;border-bottom:1px solid #121b29">'+info+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  // vínculos a webs certificadas/reguladas para invertir
+  html+='<div class="buy-links"><span style="color:var(--dim);font-size:10.5px">Invertir en plataforma regulada:</span> '+
+    '<a class="plat-mini" href="https://www.bitso.com" target="_blank" rel="noopener">Bitso</a>'+
+    '<a class="plat-mini" href="https://www.binance.com" target="_blank" rel="noopener">Binance</a>'+
+    '<a class="plat-mini" href="https://www.kraken.com" target="_blank" rel="noopener">Kraken</a>'+
+    '<a class="plat-mini" href="https://www.coinbase.com" target="_blank" rel="noopener">Coinbase</a>'+
+    '<a class="plat-mini" href="https://www.volabit.com" target="_blank" rel="noopener">Volabit</a></div>';
+  box.innerHTML=html;
+  stat.textContent='score máx '+maxScore.toFixed(1);
+}
+// vínculos para el bloque de metales (mismas plataformas reguladas)
+function renderMetalesLinks(){
+  const box=document.getElementById('metalesBox');
+  if(!box || !box.innerHTML) return;
+  const links='<div class="buy-links"><span style="color:var(--dim);font-size:10.5px">Comprar metal tokenizado en plataforma regulada:</span> '+
+    '<a class="plat-mini" href="https://www.bitso.com" target="_blank" rel="noopener">Bitso</a>'+
+    '<a class="plat-mini" href="https://www.binance.com" target="_blank" rel="noopener">Binance</a>'+
+    '<a class="plat-mini" href="https://www.kraken.com" target="_blank" rel="noopener">Kraken</a>'+
+    '<a class="plat-mini" href="https://www.coinbase.com" target="_blank" rel="noopener">Coinbase</a>'+
+    '<a class="plat-mini" href="https://www.volabit.com" target="_blank" rel="noopener">Volabit</a></div>';
+  box.insertAdjacentHTML('beforeend', links);
+}
 let CHART_ID=null, CHART_SERIES=[], CHART_TIMES=[], CHART_PRICE=null;
 let CHART_VIEW={a:0,b:0}; // indices visibles (zoom)
 let CHART_HOVER=-1;       // indice bajo el cursor
