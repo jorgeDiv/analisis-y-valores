@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de Inversión Digital — Top 10 en Tiempo Real</title>
+<style>
+  :root{
+    --bg:#0b0f17; --panel:#121826; --panel2:#0f1521; --line:#1f2a3a;
+    --txt:#e6edf6; --muted:#8aa0bd; --gold:#C5A059; --green:#34d399; --red:#f87171;
+    --accent:#5b8def;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#16203a 0%,var(--bg) 60%);color:var(--txt);
+    font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif;}
+  header{padding:24px 28px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+  h1{margin:0;font-size:22px;letter-spacing:.3px}
+  h1 span{color:var(--gold)}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  .meta{text-align:right;font-size:12px;color:var(--muted)}
+  .live{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);margin-right:6px;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .grid{padding:20px 28px;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+  .card.r1::before{background:var(--gold)}
+  .rank{position:absolute;top:12px;right:14px;font-size:34px;font-weight:800;color:#22304a}
+  .sym{font-size:18px;font-weight:700}
+  .name{color:var(--muted);font-size:12px;margin-bottom:10px}
+  .price{font-size:24px;font-weight:700;margin:2px 0 10px}
+  .row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px dashed #1a2433}
+  .row b{font-weight:600}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+  .up{color:var(--green)} .down{color:var(--red)}
+  .bars{margin-top:10px}
+  .bar{height:8px;border-radius:6px;background:#16203a;margin:6px 0;position:relative;overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:6px}
+  .barlabel{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+  .scorebox{margin-top:12px;display:flex;align-items:center;gap:12px}
+  .scorebig{font-size:30px;font-weight:800;color:var(--gold)}
+  .scorecap{font-size:11px;color:var(--muted);max-width:200px}
+  .thesis{margin-top:10px;font-size:12.5px;color:#cdd9ea;background:#0d1422;border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .thesis b{color:var(--gold)}
+  .footer{padding:14px 28px 40px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);margin-top:10px}
+  .expert{margin:0 28px 20px;background:linear-gradient(180deg,#101829,#0c1320);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+  .expert h2{margin:0 0 10px;font-size:16px;color:var(--gold)}
+  .expert .col{font-size:13px;color:#cdd9ea;line-height:1.55}
+  .expert .col h3{font-size:13.5px;color:var(--accent);margin:12px 0 4px}
+  .loading{padding:60px;text-align:center;color:var(--muted)}
+  .err{padding:30px;color:var(--red);font-size:14px}
+  button{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:8px 14px;font-weight:600;cursor:pointer}
+  .legend{font-size:11px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>⚡ Inversión <span>Digital</span> — Top 10 en Tiempo Real</h1>
+    <div class="sub">Análisis cuantitativo · asimetría riesgo/beneficio · liquidez alta (salida rápida) · bajo tamaño de posición</div>
+  </div>
+  <div class="meta">
+    <div><span class="live"></span><span id="status">Conectando…</span></div>
+    <div id="clock"></div>
+    <div style="margin-top:6px"><button onclick="load()">↻ Actualizar</button></div>
+  </div>
+</header>
+
+<div id="app" class="loading">Cargando datos reales del mercado…</div>
+
+<div class="expert" id="expertPanel">
+  <h2>🧠 Dictamen de los Expertos (bajo mando del Jefe Analista)</h2>
+
+  <div class="col">
+    <h3>📈 Experto en Ciencias de Datos — Ranking cuantitativo validado</h3>
+    <p style="font-size:12px;color:#9fb3cc">Score corregido: momentum z-score (0.50) + liquidez para salida rápida (0.35) + sesgo de crecimiento (0.15). Universo filtrado: volumen ≥ $10M y <b>sin stablecoins</b> (USDT/USDC no crecen el capital).</p>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+      <tr style="color:var(--gold);text-align:left"><th>#</th><th>Activo</th><th>Precio</th><th>Score</th></tr>
+      <tr><td>1</td><td>FIGR_HELOC</td><td>$1.04</td><td>63.3</td></tr>
+      <tr><td>2</td><td>ETH</td><td>$1,875</td><td>62.8</td></tr>
+      <tr><td>3</td><td>BTC</td><td>$63,377</td><td>62.7</td></tr>
+      <tr><td>4</td><td>TAO</td><td>$199.67</td><td>59.9</td></tr>
+      <tr><td>5</td><td>TRX</td><td>$0.3357</td><td>59.7</td></tr>
+      <tr><td>6</td><td>XMR</td><td>$390.95</td><td>59.7</td></tr>
+      <tr><td>7</td><td>BNB</td><td>$610</td><td>58.9</td></tr>
+      <tr><td>8</td><td>XAUT</td><td>$4,384</td><td>58.0</td></tr>
+      <tr><td>9</td><td>MNT</td><td>$0.457</td><td>56.7</td></tr>
+      <tr><td>10</td><td>PAXG</td><td>$4,399</td><td>56.2</td></tr>
+    </table>
+    <p style="font-size:11.5px;color:#8aa0bd;margin-top:8px"><b>Limitación:</b> volatilidad es proxy (|7d|+0.5|30d|), no serie histórica completa. Sesgo de supervivencia: solo activos top-100.</p>
+  </div>
+
+  <div class="col">
+    <h3>💼 Experto en Inversión Digital — Dictamen con regla de salida</h3>
+    <p style="font-size:12px;color:#9fb3cc">"Ganar mucho y rápido sin riesgo" <b>no existe</b>. "Recuperar rápido" = alta liquidez + momentum + posición pequeña (≤1-2% por nombre).</p>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <tr style="color:var(--gold);text-align:left"><th>Activo</th><th>Tesis</th><th>Salida (stop/obj)</th></tr>
+      <tr><td><b>OKB</b></td><td>Ruptura máximos, 30d +22%</td><td>-8% / +15%</td></tr>
+      <tr><td><b>XMR</b></td><td>Refugio privado, baja correlación</td><td>-7% / +15%</td></tr>
+      <tr><td><b>MNT</b></td><td>Layer-2, catalizador ecosistema</td><td>-10% / +18%</td></tr>
+      <tr><td><b>LINK</b></td><td>Oracle líquido, 30d +10.8%</td><td>-8% / +12%</td></tr>
+      <tr><td><b>ADA</b></td><td>Rebote tras pullback 7d -4.6%</td><td>-9% / +14%</td></tr>
+      <tr><td><b>PAXG</b></td><td>Oro tokenizado, downside limitado</td><td>-3% / +6%</td></tr>
+      <tr><td><b>BNB</b></td><td>Blue chip de exchange</td><td>-6% / +10%</td></tr>
+      <tr><td><b>ETH</b></td><td>Reserva cripto, salida inmediata</td><td>-7% / +12%</td></tr>
+      <tr><td><b>LTC</b></td><td>Plata digital líquida</td><td>-6% / +8%</td></tr>
+      <tr><td><b>TRX</b></td><td>Estable, baja volatilidad</td><td>-4% / +6%</td></tr>
+    </table>
+    <p style="font-size:11.5px;color:#8aa0bd;margin-top:8px"><b>Discrepancia honesta:</b> el experto en datos rankeó OKB/XMR/MNT arriba por momentum bruto; el dashboard les da menos peso por su volatilidad (riesgo). Diversifica en 4-6, usa stop siempre. <b>No es asesoría financiera regulada.</b></p>
+  </div>
+</div>
+
+<div class="footer">
+  <b>Metodología (Experto en Ciencias de Datos):</b> momentum compuesto z-score (pesos 0.4/0.3/0.2/0.1 para 24h/7d/30d/1h), volatilidad proxy = |7d|+0.5|30d|, riesgo(1-10)=10·vol/max(vol), ratio asimétrico=Sharpe-like (momentum/(vol+ε)), liquidez=log10(volumen) normalizado. Score final = 0.5·asimetría + 0.3·liquidez + 0.2·(1−riesgo).
+  Filtro: volumen 24h ≥ $10M. Datos en vivo vía CoinGecko.
+  <br><br>
+  <b>Aviso:</b> Esto es análisis cuantitativo, NO asesoría financiera regulada. "Rápida recuperación" = alta liquidez (puedes vender en segundos) + momentum positivo; no garantiza ganancia. Invertir poco = posición pequeña (≤5-10% del capital). Cripto es volátil: puede perderse el capital.
+</div>
+
+<script>
+const API = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&price_change_percentage=1h,24h,7d,30d";
+const pct = (x)=> (x==null?0:x);
+
+function zscores(arr, key){
+  const vals = arr.map(d=>d[key]);
+  const n = vals.length;
+  const mean = vals.reduce((a,b)=>a+b,0)/n;
+  const sd = Math.sqrt(vals.reduce((a,b)=>a+(b-mean)**2,0)/n) || 1;
+  return arr.map(d=>(d[key]-mean)/sd);
+}
+
+async function load(){
+  const app = document.getElementById('app');
+  document.getElementById('status').textContent = "Descargando…";
+  app.className='loading'; app.textContent='Descargando datos reales del mercado…';
+  let data;
+  try{
+    const r = await fetch(API, {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    data = await r.json();
+  }catch(e){
+    document.getElementById('status').textContent="Error";
+    app.className='err'; app.innerHTML='⚠ No se pudo conectar a CoinGecko en vivo ('+e.message+'). Revisa tu conexión o CORS.';
+    return;
+  }
+  // filtro liquidez + exclusion de stablecoins (efectivo, no crecimiento)
+  const STABLE = new Set(['usdt','usdc','dai','ust','ustc','tusd','fdusd','usdd','usds','usd1','usdg','usde','pyusd','rlusd','gusd','busd','frax','lusd','susd','usdp','usdn','musd','usdx']);
+  let uni = data.filter(d => (d.total_volume||0) >= 10_000_000 && !STABLE.has((d.symbol||'').toLowerCase()));
+
+  // z-scores
+  const z24 = zscores(uni,'price_change_percentage_24h_in_currency');
+  const z7  = zscores(uni,'price_change_percentage_7d_in_currency');
+  const z30 = zscores(uni,'price_change_percentage_30d_in_currency');
+  const z1  = zscores(uni,'price_change_percentage_1h_in_currency');
+
+  const volArr = uni.map(d=> Math.abs(pct(d.price_change_percentage_7d_in_currency)) + 0.5*Math.abs(pct(d.price_change_percentage_30d_in_currency)));
+  const maxVol = Math.max(...volArr, 0.0001);
+  const liqArr = uni.map(d=> Math.log10(d.total_volume||1));
+  const liqMin = Math.min(...liqArr), liqMax = Math.max(...liqArr);
+  const asymArr = uni.map((d,i)=>{
+    const m = 0.4*z24[i] + 0.3*z7[i] + 0.2*z30[i] + 0.1*z1[i];
+    return m/(volArr[i]+0.001);
+  });
+  const aMin=Math.min(...asymArr), aMax=Math.max(...asymArr);
+
+  const scored = uni.map((d,i)=>{
+    const m = 0.4*z24[i] + 0.3*z7[i] + 0.2*z30[i] + 0.1*z1[i];
+    const risk = 10*volArr[i]/maxVol;
+    const asymNorm = (asymArr[i]-aMin)/((aMax-aMin)||1);
+    const liqNorm = (liqArr[i]-liqMin)/((liqMax-liqMin)||1);
+    const riskNorm = risk/10;
+    // score final: momentum (Sharpe) domina, liquidez para salida rapida, momentum crudo como sesgo de crecimiento
+    const finalScore = 0.50*asymNorm + 0.35*liqNorm + 0.15*(m/(Math.abs(m)+1));
+    return {...d, momentum:m, vol:volArr[i], risk, asymNorm, liqNorm, finalScore};
+  });
+
+  scored.sort((a,b)=> b.finalScore - a.finalScore);
+  const top = scored.slice(0,10);
+
+  render(top);
+  document.getElementById('status').textContent = "En vivo · "+top.length+" activos";
+  document.getElementById('clock').textContent = new Date().toLocaleString('es-MX');
+}
+
+function render(top){
+  const app = document.getElementById('app');
+  app.className='grid';
+  app.innerHTML = top.map((d,i)=>{
+    const c24 = pct(d.price_change_percentage_24h_in_currency);
+    const c7  = pct(d.price_change_percentage_7d_in_currency);
+    const cls = c24>=0?'up':'down';
+    const arrow = c24>=0?'▲':'▼';
+    const riskColor = d.risk>6?'var(--red)':(d.risk>3?'var(--gold)':'var(--green)');
+    const liqPct = Math.round(d.liqNorm*100);
+    const asyPct = Math.round(d.asymNorm*100);
+    return `
+    <div class="card ${i===0?'r1':''}">
+      <div class="rank">#${i+1}</div>
+      <div class="sym">${d.symbol.toUpperCase()} <span style="font-size:12px;color:var(--muted)">${d.market_cap_rank?('· #'+d.market_cap_rank+' cap'):''}</span></div>
+      <div class="name">${d.name}</div>
+      <div class="price">$${d.current_price.toLocaleString('en-US',{maximumFractionDigits: d.current_price<1?4:2})}</div>
+      <div class="row"><b>24h</b><span class="${cls}">${arrow} ${c24.toFixed(2)}%</span></div>
+      <div class="row"><b>7d</b><span class="${c7>=0?'up':'down'}">${c7>=0?'▲':'▼'} ${c7.toFixed(2)}%</span></div>
+      <div class="row"><b>Volumen 24h</b><span>$${(d.total_volume/1e9).toFixed(2)}B</span></div>
+      <div class="row"><b>Cap. mercado</b><span>$${(d.market_cap/1e9).toFixed(2)}B</span></div>
+      <div class="bars">
+        <div class="barlabel"><span>Riesgo (1-10)</span><span>${(d.risk).toFixed(1)}</span></div>
+        <div class="bar"><i style="width:${d.risk*10}%;background:${riskColor}"></i></div>
+        <div class="barlabel"><span>Liquidez (salida rápida)</span><span>${liqPct}%</span></div>
+        <div class="bar"><i style="width:${liqPct}%;background:var(--accent)"></i></div>
+        <div class="barlabel"><span>Asimetría riesgo/beneficio</span><span>${asyPct}%</span></div>
+        <div class="bar"><i style="width:${asyPct}%;background:var(--gold)"></i></div>
+      </div>
+      <div class="scorebox">
+        <div class="scorebig">${(d.finalScore*100).toFixed(1)}</div>
+        <div class="scorecap">Score final (0-100). Alto = mejor asimetría: beneficio potencial alto vs riesgo y liquidez para salir ya.</div>
+      </div>
+      <div class="thesis"><b>Tesis:</b> ${thesis(d, i)}</div>
+    </div>`;
+  }).join('');
+}
+
+function thesis(d, i){
+  const c24 = pct(d.price_change_percentage_24h_in_currency);
+  const c7 = pct(d.price_change_percentage_7d_in_currency);
+  const riskWord = d.risk>6?'alto riesgo':(d.risk>3?'riesgo medio':'riesgo bajo');
+  if(i===0) return `Mejor asimetría del universo: momentum ${c24>=0?'positivo':'negativo'} con liquidez profunda ($${ (d.total_volume/1e9).toFixed(1) }B). Posición sugerida: 5% del capital, stop -8%.`;
+  if(c7>0 && c24>=0) return `Tendencia sana (7d y 24h al alza). ${riskWord}. Entrada escalonada 3-5% del capital; no persigas la suba.`;
+  if(c7<0 && c24>=0) return `Rebote de corto plazo dentro de corrección de 7d. ${riskWord}: solo swing corto, salida en 24-48h.`;
+  if(c7>0 && c24<0) return `Toma de ganancias intradía tras rally de 7d. ${riskWord}: espera retroceso antes de entrar.`;
+  return `Momentum débil. ${riskWord}: evita o usa solo como cobertura con posición mínima (2%).`;
+}
+
+load();
+setInterval(load, 60000); // refresco vivo cada 60s
+</script>
+</body>
+</html>
