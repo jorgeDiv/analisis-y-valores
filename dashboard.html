@@ -38,6 +38,7 @@
   .main{background:var(--bg);padding:18px 22px}
   .side{background:var(--bg);padding:18px 18px;display:flex;flex-direction:column;gap:18px}
   .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center}
+  .rtchart-wrap{position:relative}
   .section-title b{color:var(--gold)}
   /* Table */
   table{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -142,7 +143,8 @@
   <div class="main">
     <div class="section-title"><span>📈 Chart lineal en tiempo real <b>· sesión en vivo</b> · un punto cada 60s</span><span id="rtStat">esperando primer tick…</span></div>
     <div class="rtchart-wrap">
-      <canvas id="rtCanvas" width="1200" height="240" style="width:100%;height:240px;background:#0a1019;border:1px solid var(--line);border-radius:9px"></canvas>
+      <canvas id="rtCanvas" width="1200" height="240" style="width:100%;height:240px;background:#0a1019;border:1px solid var(--line);border-radius:9px;cursor:crosshair"></canvas>
+      <div id="rtTip" style="display:none;position:absolute;pointer-events:none;z-index:5;background:#0d1422;border:1px solid var(--gold);border-radius:8px;padding:7px 9px;font-size:11px;color:var(--txt);box-shadow:0 6px 20px rgba(0,0,0,.5);min-width:120px"></div>
       <div id="rtLegend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
     </div>
 
@@ -612,6 +614,24 @@ function drawRT(animate){
   const lg=document.getElementById('rtLegend');
   lg.innerHTML=series.map((se,si)=>'<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><i style="width:10px;height:3px;background:'+RT_COLORS[si%RT_COLORS.length]+';display:inline-block;border-radius:2px"></i>'+se.s+'</span>').join('');
   document.getElementById('rtStat').textContent='ticks: '+n+' · ventana ~'+(n*60/60).toFixed(0)+' min';
+  // guardar geometría para hover con mouse
+  rtGeo={W,H,padL,padR,padT,padB,x,y,series,n,gMin,gMax};
+  // guía vertical + punto bajo el cursor (estilo Google Finance)
+  if(rtHoverX!=null){
+    const gi=Math.round((rtHoverX-padL)/(W-padL-padR)*(Math.max(1,n-1)));
+    const hi=Math.max(0,Math.min(n-1,gi));
+    const gx=x(hi);
+    ctx.strokeStyle='rgba(230,238,247,.35)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(gx,padT);ctx.lineTo(gx,H-padB);ctx.stroke();ctx.setLineDash([]);
+    series.forEach((se,si)=>{
+      const val=se.data[hi]; if(val==null) return;
+      const py=y(val); const col=RT_COLORS[si%RT_COLORS.length];
+      ctx.beginPath();ctx.arc(gx,py,si===0?4:3,0,7);
+      ctx.fillStyle=col;ctx.fill();
+      ctx.beginPath();ctx.arc(gx,py,si===0?8:6,0,7);ctx.fillStyle=si===0?'rgba(95,240,176,.18)':'rgba(230,238,247,.12)';ctx.fill();
+    });
+    rtShowTip(gx,hi);
+  } else { rtHideTip(); }
 }
 let rtAnimLead=1, rtAnimating=false, rtPrevLen=0;
 function rtEase(t){return t<0?0:t>1?1:t*t*(3-2*t);}
@@ -621,6 +641,36 @@ function rtStartAnim(){
   function step(ts){ if(start===null)start=ts; const t=Math.min(1,(ts-start)/450); rtAnimLead=t; drawRT(false); if(t<1)requestAnimationFrame(step); else {rtAnimating=false;rtAnimLead=1;} }
   requestAnimationFrame(step);
 }
+// --- interacción con mouse (estilo Google Finance) ---
+let rtGeo=null, rtHoverX=null;
+function rtShowTip(gx,hi){
+  const tip=document.getElementById('rtTip');if(!tip||!rtGeo)return;
+  const wrap=document.querySelector('.rtchart-wrap');if(!wrap)return;
+  const wr=wrap.getBoundingClientRect();
+  const scaleX=wr.width/rtGeo.W;
+  let html='<div style="color:var(--dim);font-size:10px;margin-bottom:4px">tick #'+(hi+1)+' · '+(rtGeo.n-hi)+' atrás</div>';
+  rtGeo.series.forEach((se,si)=>{
+    const val=se.data[hi]; if(val==null)return;
+    const pctv=(val-100);
+    const col=RT_COLORS[si%RT_COLORS.length];
+    html+='<div style="display:flex;justify-content:space-between;gap:10px;margin:1px 0"><span style="color:'+col+'">'+se.s+'</span><b style="color:'+(pctv>=0?'var(--green)':'var(--red)')+'">'+(pctv>=0?'+':'')+pctv.toFixed(2)+'%</b></div>';
+  });
+  tip.innerHTML=html;
+  tip.style.display='block';
+  let left=gx*scaleX+12; if(left+tip.offsetWidth>wr.width) left=gx*scaleX-tip.offsetWidth-12;
+  tip.style.left=left+'px';
+  tip.style.top=(rtGeo.padT*wr.height/rtGeo.H+4)+'px';
+}
+function rtHideTip(){ const tip=document.getElementById('rtTip'); if(tip)tip.style.display='none'; }
+(function rtBindMouse(){
+  const cv=document.getElementById('rtCanvas');if(!cv)return;
+  cv.addEventListener('mousemove',e=>{
+    const r=cv.getBoundingClientRect();
+    rtHoverX=(e.clientX-r.left)*(cv.width/r.width);
+    if(!rtAnimating) drawRT(false);
+  });
+  cv.addEventListener('mouseleave',()=>{ rtHoverX=null; if(!rtAnimating) drawRT(false); });
+})();
 
 function selectRow(i){
   SELECTED=i;
