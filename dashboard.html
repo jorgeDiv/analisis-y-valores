@@ -103,6 +103,10 @@
   .ia-log{margin-top:12px;max-height:140px;overflow:auto;font-size:11.5px;color:var(--muted);background:#0a1019;border:1px solid var(--line);border-radius:8px;padding:10px;line-height:1.7}
   .ia-warn{font-size:11px;color:var(--dim);margin-top:12px;line-height:1.6;border-top:1px solid var(--line);padding-top:10px}
   .ia-paused{color:var(--gold)!important}
+  .ia-binance{border:1px solid var(--line2);border-radius:11px;padding:14px;margin-bottom:14px;background:#0c1420}
+  .ia-bn-head{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px}
+  .ia-trade-lock{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+  .ia-trade-lock input[type=checkbox]{width:16px;height:16px}
 </head>
 <body>
 
@@ -573,7 +577,7 @@ load();
 
 // ==================== ASISTENTE IA (paper / Monte Carlo) ====================
 let IA={open:false,running:false,paused:false,capital:0,horizon:24,sims:2000,pos:{},equity:0,log:[]};
-function abrirAsistente(){IA.open=true;document.getElementById('iaModal').style.display='flex';logIA('Asistente IA abierto. Usa capital SIMULADO.');}
+function abrirAsistente(){IA.open=true;document.getElementById('iaModal').style.display='flex';cargarBinanceLS();logIA('Asistente IA abierto. Usa capital SIMULADO.');}
 function cerrarAsistente(){IA.open=false;document.getElementById('iaModal').style.display='none';}
 function logIA(t){IA.log.unshift('['+new Date().toLocaleTimeString('es-MX')+'] '+t);const el=document.getElementById('iaLog');if(el)el.innerHTML=IA.log.slice(0,40).map(x=>'• '+x).join('<br>');}
 
@@ -660,6 +664,75 @@ function retiro(){
   document.getElementById('iaStatus').textContent='💸 Retiro simulado: $'+ret.toFixed(2)+'. Agente detenido.';
   document.getElementById('iaResult').innerHTML+='<div style="margin-top:10px;padding:10px;border:1px solid var(--gold);border-radius:9px;color:var(--gold)">Retiro PAPER: $'+ret.toFixed(2)+' (no es dinero real). ¿Conectar a exchange real? Requiere tus API keys + riesgo explícito.</div>';
 }
+// ==================== BINANCE SOLO LECTURA ====================
+const BN_LS='bn_keys_v1';
+let BN={key:'',sec:'',connected:false};
+function guardarBinance(){
+  const k=document.getElementById('bnKey').value.trim();
+  const s=document.getElementById('bnSec').value.trim();
+  if(!k||!s){document.getElementById('bnStatus').textContent='⚠ Falta API Key o Secret.';return;}
+  BN.key=k; BN.sec=s;
+  try{ localStorage.setItem(BN_LS, JSON.stringify({key:k,sec:s})); }catch(e){}
+  document.getElementById('bnStatus').textContent='💾 Guardado en este navegador (localStorage). No se sube al repo.';
+}
+function cargarBinanceLS(){
+  try{ const j=JSON.parse(localStorage.getItem(BN_LS)||'{}'); if(j.key&&j.sec){BN.key=j.key;BN.sec=j.sec;document.getElementById('bnKey').value=j.key;document.getElementById('bnSec').value=j.sec;} }catch(e){}
+}
+async function hmacSHA256(secret, msg){
+  const enc=new TextEncoder();
+  const key=await crypto.subtle.importKey('raw',enc.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const sig=await crypto.subtle.sign('HMAC',key,enc.encode(msg));
+  return Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function conectarBinance(){
+  if(!BN.key||!BN.sec){
+    BN.key=document.getElementById('bnKey').value.trim();
+    BN.sec=document.getElementById('bnSec').value.trim();
+    if(!BN.key||!BN.sec){document.getElementById('bnStatus').textContent='⚠ Pegá tu API Key y Secret (o Guardar primero).';return;}
+  }
+  document.getElementById('bnStatus').textContent='🔌 Conectando (solo lectura)…';
+  try{
+    const t=await (await fetch('https://api.binance.com/api/v3/time')).json();
+    const params=new URLSearchParams({timestamp:t.serverTime,recvWindow:5000});
+    const q=params.toString();
+    const sig=await hmacSHA256(BN.sec,q);
+    const r=await fetch('https://api.binance.com/api/v3/account?'+q+'&signature='+sig,{headers:{'X-MBX-APIKEY':BN.key}});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.msg||('HTTP '+r.status));
+    BN.connected=true;
+    document.getElementById('bnDisconnect').style.display='inline-block';
+    const bals=(j.balances||[]).filter(b=>parseFloat(b.free)>0||parseFloat(b.locked)>0);
+    const usdLike=bals.filter(b=>['USDT','USDC','BUSD','FDUSD','TUSD','DAI'].includes(b.asset));
+    const usdFree=usdLike.reduce((a,b)=>a+parseFloat(b.free)+parseFloat(b.locked),0);
+    const otros=bals.filter(b=>!['USDT','USDC','BUSD','FDUSD','TUSD','DAI'].includes(b.asset)).map(b=>b.asset+' '+parseFloat(b.free).toFixed(4));
+    document.getElementById('bnStatus').innerHTML='✅ Conectado (SOLO LECTURA). Saldo estable ~$'+usdFree.toFixed(2)+'<br>Activos: '+(otros.join(', ')||'ninguno');
+    IA.capitalReal=usdFree>0?usdFree:IA.capital;
+    logIA('Binance conectado (lectura). Saldo estable ~$'+usdFree.toFixed(2)+'. El agente SIGUE en simulación; no opera.');
+    document.getElementById('iaStatus').textContent='🔗 Binance (lectura) conectado. Equity base = $'+IA.capitalReal.toFixed(2)+'. Control sigue en PAPER.';
+  }catch(e){
+    document.getElementById('bnStatus').textContent='❌ Error Binance: '+e.message+' (revisa API key/secret o permisos de LECTURA).';
+    logIA('Error conexión Binance: '+e.message);
+  }
+}
+function desconectarBinance(){
+  BN.connected=false;
+  document.getElementById('bnDisconnect').style.display='none';
+  document.getElementById('bnStatus').textContent='Desconectado.';
+  logIA('Binance desconectado.');
+}
+function toggleTradeLock(){
+  const ack=document.getElementById('bnRiskAck').checked;
+  const btn=document.getElementById('bnTradeBtn');
+  btn.disabled=!ack;
+  btn.style.opacity=ack?'1':'0.5';
+  btn.style.cursor=ack?'pointer':'not-allowed';
+  document.getElementById('bnTradeNote').textContent=ack?'⚠ Trading REAL habilitado por tu confirmación. El agente AÚN no ejecuta nada automático.':'Trading deshabilitado por seguridad. El agente solo LEE tu cuenta y simula.';
+}
+function intentarTrading(){
+  if(!document.getElementById('bnRiskAck').checked){return;}
+  document.getElementById('bnTradeNote').textContent='🚫 El Asistente IA NO ejecuta órdenes automáticas. Esto protege tu capital. Para operar real, hazlo manualmente en tu exchange y usa este panel solo como lectura+simulación.';
+  logIA('Intento de trading bloqueado: el agente no opera automáticamente (protección).');
+}
 function dibujarDistIA(arr){
   const cv=document.getElementById('iaCanvas');if(!cv)return;
   const ctx=cv.getContext('2d');const W=cv.width,H=cv.height,padB=20,padT=10;
@@ -696,6 +769,24 @@ function dibujarDistIA(arr){
         <button class="btn-ia" onclick="evaluarAsistente()">▶ Evaluar y tomar control (paper)</button>
         <button id="iaPauseBtn" onclick="togglePausa()">⏸ Pausa</button>
         <button id="iaRetiroBtn" onclick="retiro()">💸 Retiro</button>
+      </div>
+      <div class="ia-binance">
+        <div class="ia-bn-head">🔗 Conexión Binance <span class="ia-tag" style="border-color:var(--blue);color:var(--blue)">SOLO LECTURA</span></div>
+        <div class="ia-controls">
+          <label>API Key<input id="bnKey" type="password" placeholder="pegá tu key" style="width:200px"></label>
+          <label>Secret<input id="bnSec" type="password" placeholder="pegá tu secret" style="width:200px"></label>
+          <button onclick="guardarBinance()">💾 Guardar (local)</button>
+          <button class="btn-ia" onclick="conectarBinance()">🔌 Conectar y leer balance</button>
+          <button id="bnDisconnect" onclick="desconectarBinance()" style="display:none">Desconectar</button>
+        </div>
+        <div id="bnStatus" class="ia-status">Sin conectar. Las llaves se guardan SOLO en este navegador (localStorage), nunca se suben al repo.</div>
+        <div class="ia-trade-lock">
+          <label style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted)">
+            <input type="checkbox" id="bnRiskAck" onchange="toggleTradeLock()"> Entiendo que el TRADING REAL puede perder mi dinero. Habilitar solo lectura basta para el agente.
+          </label>
+          <button id="bnTradeBtn" disabled onclick="intentarTrading()" style="opacity:.5;cursor:not-allowed">⚠ Ejecutar orden REAL (BLOQUEADO)</button>
+          <span id="bnTradeNote" style="font-size:11px;color:var(--dim)">Trading deshabilitado por seguridad. El agente solo LEE tu cuenta y simula.</span>
+        </div>
       </div>
       <div id="iaStatus" class="ia-status">Listo. Define capital y pulsa Evaluar.</div>
       <div id="iaResult" class="ia-result"></div>
