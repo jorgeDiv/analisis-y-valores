@@ -6,9 +6,11 @@
 <title>Terminal Cuantitativa · Inversión Digital</title>
 <style>
   :root{
-    --bg:#070b12; --panel:#0d1422; --panel2:#0a1019; --line:#1b2738; --line2:#243349;
-    --txt:#e8eef7; --muted:#7e93ad; --dim:#56697f; --gold:#C5A059; --gold2:#e0bd7d;
+    --bg:#070b12; --panel:#0d1422; --panel2:#0a1019; --line:#1b2738; --line2:#1e3a2e;
+    --txt:#e8eef7; --muted:#7e93ad; --dim:#56697f;
+    --gold:#2ebd85; --gold2:#5ff0b0;            /* verde fluorescente claro estilo Binance */
     --green:#2dd4a7; --red:#ff6b6b; --blue:#5b9dff; --violet:#a78bfa;
+    --glow:0 0 10px rgba(46,189,133,.45);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--txt);font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;font-size:13px;line-height:1.4}
@@ -16,9 +18,8 @@
   /* Top bar */
   .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 26px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0c1422,#070b12)}
   .brand{display:flex;align-items:center;gap:12px}
-  .brand .dot{width:11px;height:11px;border-radius:3px;background:var(--gold);box-shadow:0 0 12px var(--gold)}
-  .brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.5px}
-  .brand h1 b{color:var(--gold)}
+  .brand .dot{width:11px;height:11px;border-radius:3px;background:var(--gold);box-shadow:var(--glow)}
+  .brand h1 b{color:var(--gold);text-shadow:var(--glow)}
   .brand .sub{font-size:11px;color:var(--muted)}
   .statuspane{display:flex;gap:18px;align-items:center;font-size:12px}
   .pill{display:flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2)}
@@ -80,7 +81,7 @@
   a.plat span b{color:var(--txt);font-size:13px}
   a.plat i{font-style:normal;font-size:10.5px;color:var(--gold);white-space:nowrap}
   /* Asistente IA modal */
-  .btn-ia{background:linear-gradient(180deg,#C5A059,#a8843f);color:#1a1206;border:0;border-radius:8px;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+  .btn-ia{background:linear-gradient(180deg,#2ebd85,#1c8a60);color:#04140d;border:0;border-radius:8px;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:var(--glow)}
   .btn-ia:hover{filter:brightness(1.12)}
   .ia-modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center}
   .ia-backdrop{position:absolute;inset:0;background:rgba(3,6,11,.72);backdrop-filter:blur(2px)}
@@ -197,6 +198,36 @@
         <a class="plat" href="https://volabit.com" target="_blank" rel="noopener"><span><b>Volabit</b> · mexicana, ventanilla y retiro en OXXO</span><i>◐ volabit.com</i></a>
       </div>
       <p style="color:var(--dim);font-size:10.5px;margin-top:9px">Ninguna es recomendación de compra. Compara comisiones (maker/taker ~0.1-1%) y verifica KYC/regulación antes de fondear. El analista no recibe comisión de estas plataformas.</p>
+    </div>
+
+    <div class="expert">
+      <h3>🪙 Tipología de Binance</h3>
+      <p style="color:var(--muted);font-size:11.5px">Familias de producto y activos que opera la exchange (educativo, no promoción).</p>
+      <div style="font-size:11.5px;line-height:1.6">
+        <div style="border-bottom:1px dashed #16202f;padding:6px 0"><b style="color:var(--gold)">Mercados</b> · Spot (al contado), Margin (apalancado), P2P (pago local), Convert (swap simple).</div>
+        <div style="border-bottom:1px dashed #16202f;padding:6px 0"><b style="color:var(--gold)">Derivados</b> · Futures USDT-M y COIN-M (apalancamiento), Opciones (call/put), apuestas de volatilidad.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:6px 0"><b style="color:var(--gold)">Earn / Pasivo</b> · Savings (ahorro), Staking (bloqueo), Locked/Flexible, Launchpool (farm con BNB), Savings en tiempo real.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:6px 0"><b style="color:var(--gold)">Emisión</b> · Launchpad (IEO por suscripción), nuevos listados, tokenizaciones.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:6px 0"><b style="color:var(--gold)">Activos</b> · Cripto (BTC, ETH, ALT), stablecoins (USDT/USDC), tokens de acciones (stock tokens), NFT, índices/ETF temáticos.</div>
+        <div style="padding:6px 0;color:var(--dim)">⚠ Derivados y margin <b style="color:var(--red)">amplifican pérdidas</b> (liquidación). El dashboard solo LEE balance (Spot/Earn); no opera derivados.</div>
+      </div>
+    </div>
+
+
+    <div class="expert">
+      <h3>⚠ Sesgos de inversión</h3>
+      <p style="color:var(--muted);font-size:11px;margin-bottom:8px">Lista de chequeo por sector (ver <a href="sesgos_inversion.html" target="_blank" rel="noopener" style="color:var(--blue)">página completa</a>).</p>
+      <div style="font-size:11px;line-height:1.6">
+        <div style="border-bottom:1px dashed #16202f;padding:5px 0"><b style="color:var(--gold)">Cripto</b> · comprar arriba (FOMO), sesgo de supervivencia, vol proxy, liquidez de giro oculta.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:5px 0"><b style="color:var(--gold)">Metales</b> · refugio vs especulativo (plata), ignorar tipos reales, ratio mágico.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:5px 0"><b style="color:var(--gold)">Tech</b> · hype IA ≠ ingresos, múltiplos en tipos altos, fuerte≠caro.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:5px 0"><b style="color:var(--gold)">ETF</b> · solapamiento, réplica sintética, TER como único filtro.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:5px 0"><b style="color:var(--gold)">Dividendos</b> · yield trap, payout+FCF negativo, yield vs crecimiento.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:5px 0"><b style="color:var(--gold)">Defensiva</b> · bonos largos caen con tipos, utilities no gratis, value con deuda.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:5px 0"><b style="color:var(--gold)">Noticias</b> · sensacionalismo, confirmación sesgada, ruido=catalizador.</div>
+        <div style="border-bottom:1px dashed #16202f;padding:5px 0"><b style="color:var(--gold)">Comité</b> · popularity bias, recencia, correlación estática.</div>
+        <div style="padding:5px 0;color:var(--violet)"><b>Transversales:</b> exceso de confianza, retorno∝riesgo, anclaje al precio, datos no verificados.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -448,7 +479,7 @@ function renderChart(){
   ctx.beginPath();ctx.moveTo(x(0),y(seg[0]));seg.forEach((v,i)=>ctx.lineTo(x(i),y(v)));ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
   // media móvil 7 (sobre segmento)
   const ma=seg.map((_,i)=>{const s=seg.slice(Math.max(0,i-6),i+1);return s.reduce((p,q)=>p+q,0)/s.length;});
-  ctx.beginPath();ma.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));ctx.strokeStyle='#C5A059';ctx.lineWidth=1.4;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ma.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));ctx.strokeStyle='#5ff0b0';ctx.lineWidth=1.4;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
   // eje Y labels
   ctx.fillStyle='#56697f';ctx.font='10px monospace';ctx.textAlign='left';
   ctx.fillText('$'+(max).toFixed(max<1?4:0),4,padT+9);
@@ -501,7 +532,7 @@ function bindChartEvents(cv){
 }
 
 // ---- Chart lineal en tiempo real (sesión: 1 punto por fetch/60s) ----
-const RT_COLORS=['#C5A059','#5b9dff','#2dd4a7','#a78bfa','#ff6b6b','#f6c453','#4fd1c5','#f78fb3','#9ae66e','#e0bd7d'];
+const RT_COLORS=['#5ff0b0','#5b9dff','#2dd4a7','#a78bfa','#ff6b6b','#f6c453','#4fd1c5','#f78fb3','#9ae66e','#7be0c0'];
 let RT={}; // sym -> [precios]
 function pushRT(scored){
   const top=scored.slice(0,10);
@@ -639,18 +670,59 @@ function evaluarAsistente(){
   IA.running=true;
   if(!IA._timer) iaLoop();
 }
+// === Motor de "mejor opción AHORA" (ligero, cada tick, sin re-simular) ===
+// Usa la serie en vivo RT[sym] para calcular drift/vol empiricos y un Sharpe-like.
+function mejorOpcion(){
+  const syms=Object.keys(RT).filter(s=>RT[s]&&RT[s].length>3);
+  if(!syms.length) return null;
+  const rows=syms.map(s=>{
+    const arr=RT[s];
+    const n=arr.length;
+    const rets=[]; for(let i=1;i<n;i++) rets.push(arr[i]/arr[i-1]-1);
+    const mean=rets.reduce((a,b)=>a+b,0)/rets.length;
+    const sd=Math.sqrt(rets.reduce((a,b)=>a+(b-mean)**2,0)/rets.length)||1e-6;
+    const sharpe=mean/sd*Math.sqrt(n); // Sharpe-like del tramo vivo
+    const last=arr[n-1], first=arr[0];
+    const retAcum=(last/first-1)*100;
+    return {sym:s, sharpe, retAcum, vol:sd*100, last};
+  }).filter(r=>r.sharpe>-99);
+  rows.sort((a,b)=>b.sharpe-a.sharpe);
+  return rows;
+}
+function renderMejorOpcion(){
+  const rows=mejorOpcion();
+  const el=document.getElementById('iaMejor');
+  if(!el) return;
+  if(!rows){el.innerHTML='<span style="color:var(--dim)">esperando ticks de precio…</span>';return;}
+  const top=rows.slice(0,3);
+  el.innerHTML='<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Mejor opción AHORA (Sharpe-like en vivo, Top 3):</div>'+
+    top.map((r,i)=>{
+      const fav=r.sharpe>0;
+      return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #16202f;font-size:12px">'+
+        '<b style="color:'+(fav?'var(--green)':'var(--red)')+'">#'+(i+1)+' '+r.sym+'</b>'+
+        '<span>Sharpe '+(r.sharpe>=0?'+':'')+r.sharpe.toFixed(2)+' · '+(r.retAcum>=0?'+':'')+r.retAcum.toFixed(2)+'%</span></div>';
+    }).join('')+
+    '<div style="font-size:10px;color:var(--dim);margin-top:6px">Asimetría favorable = Sharpe>0. No es predicción cierta: es la opción con mejor relación riesgo/beneficio medida en los ticks vivos.</div>';
+}
 function iaLoop(){
   if(!IA.running){IA._timer=null;return;}
   if(IA.open && !IA.paused && CURRENT.length){
-    // rebalanceo simple: si un activo del Top10 cae de score, el agente "mueve" peso a uno mejor (solo simulado)
+    // rebalanceo por score asimetrico (peso ~ score normalizado)
     const top=CURRENT.slice(0,10);
     const tot=top.reduce((a,d)=>a+d.score100,0);
     let eq=IA.equity;
     top.forEach(d=>{const w=d.score100/tot; IA.pos[d.symbol.toUpperCase()]=eq*w;});
     const best=top[0];
-    logIA('Control: equity $'+eq.toFixed(0)+' · mayor peso → '+best.symbol.toUpperCase()+' (score '+best.score100.toFixed(1)+')');
+    // motor de "mejor opcion cada segundo" (ligero, sin fetch)
+    renderMejorOpcion();
+    const rows=mejorOpcion();
+    if(rows&&rows[0]){
+      const r=rows[0];
+      const tag=r.sharpe>0?'asimetría FAVORABLE ▲':'asimetría desfavorable ▼';
+      logIA('⚡ Mejor opción ('+new Date().toLocaleTimeString('es-MX')+'): '+r.sym+' Sharpe '+(r.sharpe>=0?'+':'')+r.sharpe.toFixed(2)+' · '+tag);
+    }
   }
-  IA._timer=setTimeout(iaLoop, 5000);
+  IA._timer=setTimeout(iaLoop, 1000); // cada segundo: reevalua la mejor opcion con datos vivos
 }
 function togglePausa(){
   IA.paused=!IA.paused;
@@ -792,6 +864,7 @@ function dibujarDistIA(arr){
         </div>
       </div>
       <div id="iaStatus" class="ia-status">Listo. Define capital y pulsa Evaluar.</div>
+      <div id="iaMejor" class="ia-result" style="background:#0a1019;border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:12px;min-height:40px"></div>
       <div id="iaResult" class="ia-result"></div>
       <canvas id="iaCanvas" width="900" height="220" style="width:100%;height:220px;background:#0a1019;border:1px solid var(--line);border-radius:9px;margin-top:10px"></canvas>
       <div id="iaLog" class="ia-log"></div>

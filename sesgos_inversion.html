@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sesgos de Inversión por Sector · QUANTTERMINAL</title>
+<style>
+  :root{
+    --bg:#070b12; --panel:#0d1422; --panel2:#0a1019; --line:#1b2738; --line2:#1e3a2e;
+    --txt:#e8eef7; --muted:#7e93ad; --dim:#56697f;
+    --gold:#2ebd85; --gold2:#5ff0b0;            /* verde fluorescente claro estilo Binance */
+    --green:#2dd4a7; --red:#ff6b6b; --blue:#5b9dff; --violet:#a78bfa;
+    --glow:0 0 10px rgba(46,189,133,.45);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;font-size:13px;line-height:1.5}
+  a{color:var(--blue)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 26px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0c1422,#070b12)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .dot{width:11px;height:11px;border-radius:3px;background:var(--gold);box-shadow:var(--glow)}
+  .brand h1 b{color:var(--gold);text-shadow:var(--glow)}
+  .brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.5px}
+  .brand .sub{font-size:11px;color:var(--muted)}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 20px 80px}
+  .intro{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:22px;border-radius:12px}
+  .intro p{margin:6px 0;color:var(--muted);font-size:12.5px}
+  .intro b{color:var(--gold2)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h2{margin:0 0 4px;font-size:14px;color:var(--gold);display:flex;align-items:center;gap:8px}
+  .card .tag{font-size:10px;color:var(--dim);border:1px solid var(--line2);border-radius:6px;padding:2px 7px;text-transform:uppercase;letter-spacing:.5px}
+  .card .desc{font-size:11.5px;color:var(--muted);margin:6px 0 12px}
+  .bias{border-top:1px dashed #16202f;padding:10px 0}
+  .bias:first-of-type{border-top:0}
+  .bias .name{font-weight:700;font-size:12.5px;color:var(--txt)}
+  .bias .name .ico{margin-right:6px}
+  .bias .what{font-size:11.5px;color:var(--muted);margin:3px 0}
+  .bias .fix{font-size:11px;color:var(--green);margin-top:3px}
+  .bias .fix b{color:var(--green)}
+  .top10{margin-top:10px;border-top:1px solid var(--line2);padding-top:8px}
+  .top10 .th{font-size:10.5px;color:var(--gold2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+  .top10 ol{margin:0;padding-left:18px}
+  .top10 li{font-size:11px;color:var(--muted);margin:3px 0;line-height:1.35}
+  .top10 li b{color:var(--txt)}
+  .top10 .note{font-size:10px;color:var(--dim);margin-top:6px;font-style:italic}
+  .cross{margin-top:26px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .cross h2{color:var(--violet);margin-top:0}
+  .cross ul{margin:8px 0 0;padding-left:18px}
+  .cross li{margin:6px 0;font-size:12.5px;color:var(--muted)}
+  .cross li b{color:var(--txt)}
+  .footer{padding:16px 26px 40px;color:var(--dim);font-size:11px;line-height:1.7;border-top:1px solid var(--line);background:var(--panel2)}
+  .footer b{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="dot"></div>
+    <div>
+      <h1>QUANT<b>TERMINAL</b> · Sesgos de Inversión</h1>
+      <div class="sub">Mapa de errores cognitivos y estructurales por sector · derivado de las skills del analista</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="intro">
+    <p><b>Por qué existe esta página.</b> Cada skill de análisis adquirida este ciclo carga con sesgos típicos del sector que analiza. Un sesgo no es una opinión: es un patrón repetible de error (cognitivo o estructural) que distorsiona la decisión. Aquí se documentan <b>de forma independiente</b>, uno por sector, con su definición y su antídoto. Al final se adaptan al dashboard principal como panel lateral.</p>
+    <p style="color:var(--dim)">No es asesoría financiera. Es una lista de chequeo para no repetir errores conocidos.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- CRIPTO -->
+    <div class="card">
+      <h2>🪙 Cripto / Activos digitales <span class="tag">live</span></h2>
+      <div class="desc">Universo top-100 por cap, vol ≥ $10M, exclusión stablecoins. Score asimétrico riesgo/beneficio.</div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Sesgo de supervivencia</div>
+        <div class="what">Rankear solo top-100 cap ignora small-caps que podrían outperform; se sobre-representa lo que "sobrevivió".</div>
+        <div class="fix"><b>Antídoto:</b> ser consciente del universo acotado; no extrapolar éxito del top al mercado completo.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Comprar arriba (FOMO de momentum)</div>
+        <div class="what">Momentum alto se lee como "tendencia sana" cuando a veces es "ya subió demasiado".</div>
+        <div class="fix"><b>Antídoto:</b> diferenciar tendencia sana de agotamiento; usar z-score, no precio absoluto.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Vol proxy ≠ riesgo real</div>
+        <div class="what">El score usa |7d|+0.5|30d| como proxy de volatilidad, no serie histórica completa.</div>
+        <div class="fix"><b>Antídoto:</b> tratar el riesgo como aproximación; no operar como si fuera volatilidad medida.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Liquidez de giro oculta</div>
+        <div class="what">Alto volumen absoluto no implica salida rápida si la rotación (vol/mcap) es baja.</div>
+        <div class="fix"><b>Antídoto:</b> vigilar rotación; "rápida recuperación" exige liquidez de giro sana.</div>
+      </div>
+      <div class="top10">
+        <div class="th">Top 10 activos donde estos sesgos son más relevantes</div>
+        <ol>
+          <li><b>Memecoins nuevas (peq-cap)</b> · sesgo de supervivencia + FOMO máximo.</li>
+          <li><b>Tokens recién listados en exchange</b> · comprar arriba tras pump.</li>
+          <li><b>Stablecoins algorítmicas</b> · vol proxy cero oculta riesgo de muerte.</li>
+          <li><b>ALT de baja rotación</b> · liquidez de giro oculta (no salen rápido).</li>
+          <li><b>BTC en máximos históricos</b> · "esta vez es distinto" + anclaje al precio.</li>
+          <li><b>L2 tokens recién lanzados</b> · sesgo de novedad sobre fundamentales.</li>
+          <li><b>DeFi farms de APY &gt;100%</b> · yield trap encubierto.</li>
+          <li><b>Tokens con un solo market maker</b> · liquidez falsa.</li>
+          <li><b>NFTs blue-chip en techo</b> · extrapolar tendencia sana.</li>
+          <li><b>Perps de alta apalancamiento</b> · liquidación por vol real no medida.</li>
+        </ol>
+        <div class="note">Ejemplos ilustrativos derivados de la skill cripto; no son recomendación ni datos vivos.</div>
+      </div>
+    </div>
+
+    <!-- METALES -->
+    <div class="card">
+      <h2>🥇 Metales preciosos <span class="tag">macro</span></h2>
+      <div class="desc">Oro/plata bajo ciclo monetario: tipos reales, dólar, bancos centrales, geopolítica.</div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Confundir refugio con especulativo</div>
+        <div class="what">Tomar a la plata (beta industrial −47% desde máximos) como "refugio seguro" como el oro.</div>
+        <div class="fix"><b>Antídoto:</b> oro = cobertura+refugio (demanda oficial); plata = sleeve especulativo táctico.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Ignorar tipos reales</div>
+        <div class="what">Mirar solo precio del metal y olvidar que tipos reales positivos y al alza presionan a la baja.</div>
+        <div class="fix"><b>Antídoto:</b> monitorear tipo real 10a (FRED DFII10) y DXY como viento en contra/favor.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Ratio oro/plata como señal mágica</div>
+        <div class="what">Asumir que un ratio alto/ba jo predice reversión automática sin contexto de ciclo industrial.</div>
+        <div class="fix"><b>Antídoto:</b> el ratio refleja ciclo industrial; no es señal de entrada por sí solo.</div>
+      </div>
+      <div class="top10">
+        <div class="th">Top 10 donde el sesgo de metales es más relevante</div>
+        <ol>
+          <li><b>Plata en fase industrial</b> · leída como refugio cuando es beta especulativa.</li>
+          <li><b>Oro en tipos reales al alza</b> · ignorar viento en contra macro.</li>
+          <li><b>Ratio oro/plata extremo</b> · tomado como señal mágica de reversión.</li>
+          <li><b>Platinos/paladio</b> · doble naturaleza industrial+refugio confunde.</li>
+          <li><b>ETFs de plata apalancados</b> · especulativo puro disfrazado de cobertura.</li>
+          <li><b>Mineras de oro small-cap</b> · beta &gt; spot, no refugio.</li>
+          <li><b>Oro "digital" (tokens respaldados)</b> · confiar sin auditoría.</li>
+          <li><b>Cobre en ciclo bajista</b> · confundir refugio con ciclo.</li>
+          <li><b>Plata física en techo</b> · anclaje al precio histórico.</li>
+          <li><b>Metales raros (litio, tierras raras)</b> · narrativa &gt; fundamentals.</li>
+        </ol>
+        <div class="note">Ejemplos ilustrativos derivados de la skill metales; no son recomendación ni datos vivos.</div>
+      </div>
+    </div>
+
+    <!-- TECH -->
+    <div class="card">
+      <h2>💻 Sector Tecnología <span class="tag">sectorial</span></h2>
+      <div class="desc">Calidad (FCF, margen, moat) vs especulativo (cash burn, "AI" en el nombre). Matriz decidir.</div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Hype de IA ≠ ingresos</div>
+        <div class="what">Empresas con "AI" en el pitch pero sin FCF ni ingresos recurrentes se valoran como infraestructura real.</div>
+        <div class="fix"><b>Antídoto:</b> separar semis/cloud con ingresos reales de caja vacía; exigir FCF positivo.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Extrapolar múltiplos en tipos altos</div>
+        <div class="what">P/E alto "justificado por crecimiento" colapsa cuando el descuento de flujos sube con tipos.</div>
+        <div class="fix"><b>Antídoto:</b> sensibilizar valoración a tipos; preferir calidad con margen estable.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Confundir fuerte con caro</div>
+        <div class="what">Subsector con fortaleza relativa se asume automáticamente "comprar"; a veces ya está caro.</div>
+        <div class="fix"><b>Antídoto:</b> matriz INVERTIR/ESPERAR/EVITAR por subsector, no por narrativa.</div>
+      </div>
+      <div class="top10">
+        <div class="th">Top 10 donde el sesgo tech es más relevante</div>
+        <ol>
+          <li><b>SPACs de "AI"</b> · hype de IA sin ingresos.</li>
+          <li><b>Acciones de meme tech (peq-cap)</b> · narrativa &gt; FCF.</li>
+          <li><b>Cloud recién ipo con burn</b> · múltiplo alto en tipos altos.</li>
+          <li><b>Ciberseguridad hype post-incidente</b> · fuerte≠caro.</li>
+          <li><b>Semis de punta caros (P/E &gt;40)</b> · extrapolar múltiplos.</li>
+          <li><b>FinTech sin camino a rentabilidad</b> · confundir crecimiento con calidad.</li>
+          <li><b>ESG tech funds de moda</b> · popularity bias.</li>
+          <li><b>Robo-advisors "IA"</b> · promesa &gt; evidencia.</li>
+          <li><b>Hardware de IA pre-revenue</b> · especulativo puro.</li>
+          <li><b>Tech de mercados emergentes</b> · riesgo divisa ignorado.</li>
+        </ol>
+        <div class="note">Ejemplos ilustrativos derivados de la skill tech; no son recomendación ni datos vivos.</div>
+      </div>
+    </div>
+
+    <!-- ETF -->
+    <div class="card">
+      <h2>📦 Carteras ETF <span class="tag">largo plazo</span></h2>
+      <div class="desc">Global, S&P 500, tech, dividendos, bonos. Selección razonada, no lista comercial.</div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Solapamiento (diworsification)</div>
+        <div class="what">Tener 5 ETF que todos trackean S&P 500 da falsa diversificación y doble TER.</div>
+        <div class="fix"><b>Antídoto:</b> medir solapamiento real; diversificación = bajo correlation, no muchos tickers.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Réplica sintética sin notar riesgo</div>
+        <div class="what">Elegir ETF sintético por TER más bajo ignorando riesgo de contraparte del swap.</div>
+        <div class="fix"><b>Antídoto:</b> preferir réplica física; si sintética, exigir colateral y entender el swap.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>TER bajo como único filtro</div>
+        <div class="what">TER <0.20% pero AUM diminuto o bid/ask ancho = liquidez pobre encubierta.</div>
+        <div class="fix"><b>Antídoto:</b> evaluar AUM + bid/ask + tracking error, no solo TER.</div>
+      </div>
+      <div class="top10">
+        <div class="th">Top 10 donde el sesgo de ETF es más relevante</div>
+        <ol>
+          <li><b>5 ETF S&amp;P 500 distintos</b> · solapamiento total.</li>
+          <li><b>ETF sintético apalancado</b> · riesgo de contraparte oculto.</li>
+          <li><b>ETF temático de moda (ej. metaverso)</b> · TER bajo pero AUM mini.</li>
+          <li><b>ETF de dividendo concentrado</b> · TER sí, pero sector único.</li>
+          <li><b>ETF apalancado diario</b> · confundir con "largo plazo".</li>
+          <li><b>ETF de un solo país emergente</b> · diversificación ilusoria.</li>
+          <li><b>ETF ESG con solapamiento</b> · popularity bias.</li>
+          <li><b>ETF de cripto sintético</b> · contraparte + tracking.</li>
+          <li><b>ETF pequeño con bid/ask ancho</b> · liquidez pobre encubierta.</li>
+          <li><b>ETF apalancado inverso</b> · erosion por volatilidad.</li>
+        </ol>
+        <div class="note">Ejemplos ilustrativos derivados de la skill ETF; no son recomendación ni datos vivos.</div>
+      </div>
+    </div>
+
+    <!-- DIVIDENDOS -->
+    <div class="card">
+      <h2>💸 Dividendos de calidad <span class="tag">renta</span></h2>
+      <div class="desc">Calidad, sostenibilidad y crecimiento del dividendo sobre yield nominal.</div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Yield trap</div>
+        <div class="what">Alto yield por caída del precio (no por salud) atrae como "ingreso barato".</div>
+        <div class="fix"><b>Antídoto:</b> investigar por qué subió el yield; caída de precio suele preceder recorte.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Payout alto + FCF negativo</div>
+        <div class="what">Dividendo financiado con deuda o sin caja libre = recorte probable en recesión.</div>
+        <div class="fix"><b>Antídoto:</b> exigir FCF cover y payout <60%; deuda manageable.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Confundir yield con crecimiento</div>
+        <div class="what">Yield estático alto se prefiere sobre dividendo creciente; el segundo compone mejor.</div>
+        <div class="fix"><b>Antídoto:</b> priorizar crecimiento del dividendo sostenido sobre yield puntual.</div>
+      </div>
+      <div class="top10">
+        <div class="th">Top 10 donde el sesgo de dividendos es más relevante</div>
+        <ol>
+          <li><b>REIT de alto yield</b> · yield trap por caja del sector.</li>
+          <li><b>MLP energéticos</b> · payout alto + cíclico.</li>
+          <li><b>Telecos maduras</b> · yield alto, crecimiento nulo.</li>
+          <li><b>Bancos regionales</b> · dividendo vs solvencia post-crisis.</li>
+          <li><b>Empresas con deuda &gt; 4x EBITDA</b> · recorte probable.</li>
+          <li><b>Acciones caídas -50% con yield 10%</b> · yield trap clásico.</li>
+          <li><b>Utilities reguladas</b> · estables pero sensibles a tipos.</li>
+          <li><b>Spin-offs con dividendo</b> · FCF no probado.</li>
+          <li><b>Empresas en turnaround</b> · confundir yield con recuperación.</li>
+          <li><b>Preferred shares</b> · priorizar coupons sobre crecimiento.</li>
+        </ol>
+        <div class="note">Ejemplos ilustrativos derivados de la skill dividendos; no son recomendación ni datos vivos.</div>
+      </div>
+    </div>
+
+    <!-- DEFENSIVA -->
+    <div class="card">
+      <h2>🛡️ Cartera defensiva <span class="tag">macro</span></h2>
+      <div class="desc">Tipos altos, inflación, recesión. Protección real vs falsa defensa.</div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Falsa defensa: bonos largos</div>
+        <div class="what">"Bonos = seguros" pero los de larga duración CAEN cuando suben los tipos.</div>
+        <div class="fix"><b>Antídoto:</b> corta duración o monetarios en entorno de tipos al alza; entender duration.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Utilities "gratis"</div>
+        <div class="what">Sectores defensivos se asumen libres de riesgo; son sensibles al coste de la deuda.</div>
+        <div class="fix"><b>Antídoto:</b> evaluar balance y coste de financiación de utilities/salud/consumo básico.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Value barato con deuda</div>
+        <div class="what">Acciones "baratas" (low P/E) con balance apalancado son frágiles en recesión.</div>
+        <div class="fix"><b>Antídoto:</b> priorizar alta calidad (FCF fuerte) sobre baratura contable.</div>
+      </div>
+      <div class="top10">
+        <div class="th">Top 10 donde el sesgo defensivo es más relevante</div>
+        <ol>
+          <li><b>Bonos largos (duration 20+)</b> · falsa defensa: caen con tipos.</li>
+          <li><b>Bonos high-yield</b> · "defensivo" pero correlacionan con equities.</li>
+          <li><b>Utilities muy apalancadas</b> · no gratis, sensibles a coste deuda.</li>
+          <li><b>Preferreds bancarios</b> · riesgo de capital en crisis.</li>
+          <li><b>REITs hipotecarios</b> · defensa ilusoria en recesión.</li>
+          <li><b>Oro minero apalancado</b> · beta &gt; spot físico.</li>
+          <li><b>Value traps (P/E bajo)</b> · baratura con deuda oculta.</li>
+          <li><b>EM sovereign debt</b> · riesgo divisa + político.</li>
+          <li><b>Convertibles</b> · híbridos que caen con equities.</li>
+          <li><b>Dividend aristocrats cíclicos</b> · recorte en recesión profunda.</li>
+        </ol>
+        <div class="note">Ejemplos ilustrativos derivados de la skill defensiva; no son recomendación ni datos vivos.</div>
+      </div>
+    </div>
+
+    <!-- NOTICIAS -->
+    <div class="card">
+      <h2>📰 Noticias y sentimiento <span class="tag">flujo</span></h2>
+      <div class="desc">Resumen objetivo de impacto en precio, márgenes, deuda, regulación.</div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Sensacionalismo de titular</div>
+        <div class="what">Actuar sobre el headline sin leer el cuerpo ni el contexto de múltiplos/expectativas.</div>
+        <div class="fix"><b>Antídoto:</b> separar hecho comprobable de interpretación; citar fuente.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Confirmación sesgada</div>
+        <div class="what">Buscar solo noticias que validen una tesis previa, ignorando señales opuestas.</div>
+        <div class="fix"><b>Antídoto:</b> construir el caso en contra deliberadamente antes de decidir.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Confundir ruido con catalizador</div>
+        <div class="what">Tratar una noticia de corto plazo como cambio estructural de valoración.</div>
+        <div class="fix"><b>Antídoto:</b> preguntar si afecta múltiplos, crecimiento o coste de financiación a 12m+.</div>
+      </div>
+      <div class="top10">
+        <div class="th">Top 10 donde el sesgo de noticias es más relevante</div>
+        <ol>
+          <li><b>Headlines de "nuevo máximo"</b> · sensacionalismo de recencia.</li>
+          <li><b>Twitter/X de influencers</b> · confirmación sesgada.</li>
+          <li><b>Titulares de "IA lo cambia todo"</b> · ruido confundido con catalizador.</li>
+          <li><b>Upgrade/downgrade de un solo broker</b> · ruido, no señal.</li>
+          <li><b>Pánico macro de un dato</b> · anclaje a un punto.</li>
+          <li><b>Noticias de M&A rumoreadas</b> · ruido sin confirmar.</li>
+          <li><b>Comparecencias de la Fed</b> · interpretación sesgada por postura.</li>
+          <li><b>Cobertura de earnings</b> · guiar por guidance, no por titular.</li>
+          <li><b>Artículos de "la bolsa se acaba"</b> · sesgo de disponibilidad.</li>
+          <li><b>Newsletters pagadas</b> · conflicto de interés oculto.</li>
+        </ol>
+        <div class="note">Ejemplos ilustrativos derivados de la skill noticias; no son recomendación ni datos vivos.</div>
+      </div>
+    </div>
+
+    <!-- ACTIVO CRITICO -->
+    <div class="card">
+      <h2>🎯 Comité de activos <span class="tag">selección</span></h2>
+      <div class="desc">Comparar 5 activos por riesgo/retorno; elegir el mejor equilibrio, no el más popular.</div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Popularity bias</div>
+        <div class="what">Elegir el activo más conocido asumiendo que "conocido = mejor equilibrio".</div>
+        <div class="fix"><b>Antídoto:</b> rankear por puntuación riesgo/retorno objetiva, no por fama.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Recencia (disponibilidad)</div>
+        <div class="what">Sobrepesar lo que acaba de subir porque está fresco en memoria; ignorar drawdown histórico.</div>
+        <div class="fix"><b>Antídoto:</b> incluir drawdown máximo y volatilidad anualizada en la comparativa.</div>
+      </div>
+      <div class="bias">
+        <div class="name"><span class="ico">⚠</span>Correlación estática</div>
+        <div class="what">Asumir correlación pasada igual a futura; en crisis las correlaciones suben (todo cae).</div>
+        <div class="fix"><b>Antídoto:</b> tratar correlación como régimen-dependiente, no constante.</div>
+      </div>
+      <div class="top10">
+        <div class="th">Top 10 donde el sesgo de comité/activos es más relevante</div>
+        <ol>
+          <li><b>El "Magnificent 7"</b> · popularity bias y concentración.</li>
+          <li><b>Bitcoin en máximos</b> · recencia + fama.</li>
+          <li><b>Nvidia en todo portfolio</b> · popularity + recencia.</li>
+          <li><b>Activos de moda (ej. Uranio)</b> · fama &gt; riesgo/retorno.</li>
+          <li><b>SPY como "diversificado"</b> · ignorar concentración en megacaps.</li>
+          <li><b>2 activos correlacionados</b> · falsa diversificación.</li>
+          <li><b>Lo que subió YTD</b> · recencia sobre drawdown.</li>
+          <li><b>Activos con drawdown olvidado</b> · no incluir en comparativa.</li>
+          <li><b>Tesis de un solo analista</b> · confirmación sesgada.</li>
+          <li><b>Activos de "crecimiento a cualquier precio"</b> · anclaje a narrativa.</li>
+        </ol>
+        <div class="note">Ejemplos ilustrativos derivados de la skill comité; no son recomendación ni datos vivos.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SESGOS TRANSVERSALES -->
+  <div class="cross">
+    <h2>🔗 Sesgos transversales (afectan a todos los sectores)</h2>
+    <ul>
+      <li><b>Exceso de confianza:</b> creer que un modelo (Monte Carlo, score) predice el futuro. Entrega probabilidad y banda, nunca certeza.</li>
+      <li><b>Retorno ∝ Riesgo:</b> "ganar mucho y rápido sin riesgo" no existe; toda asimetría favorable paga con volatilidad.</li>
+      <li><b>Anclaje al precio:</b> juzgar caro/barato por precio absoluto en vez de múltiplo ajustado por tipos y crecimiento.</li>
+      <li><b>Aversión a la pérdida mal aplicada:</b> mantener lo que cae por no "realizar" la pérdida, ignorando riesgo de recorte.</li>
+      <li><b>Datos no verificados:</b> con web caída (saldo Nous 402), cualquier TER/múltiplo debe confirmarse en la fuente antes de actuar.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+  <b>Adaptación al dashboard:</b> los sesgos anteriores se resumen en un panel lateral "⚠ Sesgos de inversión" dentro de <b>dashboard.html</b>, como lista de chequeo rápida. El panel y esta página comparten la misma fuente de verdad (las skills del analista).
+  <br><br>
+  <b>Aviso:</b> contenido educativo de gestión de riesgo, <b>NO asesoría financiera regulada</b>. Los sesgos son patrones documentados; no garantizan resultado.
+</div>
+
+</body>
+</html>
