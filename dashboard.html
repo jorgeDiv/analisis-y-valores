@@ -3,235 +3,404 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard de Inversión Digital — Top 10 en Tiempo Real</title>
+<title>Terminal Cuantitativa · Inversión Digital</title>
 <style>
   :root{
-    --bg:#0b0f17; --panel:#121826; --panel2:#0f1521; --line:#1f2a3a;
-    --txt:#e6edf6; --muted:#8aa0bd; --gold:#C5A059; --green:#34d399; --red:#f87171;
-    --accent:#5b8def;
+    --bg:#070b12; --panel:#0d1422; --panel2:#0a1019; --line:#1b2738; --line2:#243349;
+    --txt:#e8eef7; --muted:#7e93ad; --dim:#56697f; --gold:#C5A059; --gold2:#e0bd7d;
+    --green:#2dd4a7; --red:#ff6b6b; --blue:#5b9dff; --violet:#a78bfa;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#16203a 0%,var(--bg) 60%);color:var(--txt);
-    font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif;}
-  header{padding:24px 28px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
-  h1{margin:0;font-size:22px;letter-spacing:.3px}
-  h1 span{color:var(--gold)}
-  .sub{color:var(--muted);font-size:13px;margin-top:4px}
-  .meta{text-align:right;font-size:12px;color:var(--muted)}
-  .live{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);margin-right:6px;animation:pulse 1.6s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-  .grid{padding:20px 28px;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
-  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden}
-  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
-  .card.r1::before{background:var(--gold)}
-  .rank{position:absolute;top:12px;right:14px;font-size:34px;font-weight:800;color:#22304a}
-  .sym{font-size:18px;font-weight:700}
-  .name{color:var(--muted);font-size:12px;margin-bottom:10px}
-  .price{font-size:24px;font-weight:700;margin:2px 0 10px}
-  .row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px dashed #1a2433}
-  .row b{font-weight:600}
-  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
-  .up{color:var(--green)} .down{color:var(--red)}
-  .bars{margin-top:10px}
-  .bar{height:8px;border-radius:6px;background:#16203a;margin:6px 0;position:relative;overflow:hidden}
-  .bar>i{display:block;height:100%;border-radius:6px}
-  .barlabel{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
-  .scorebox{margin-top:12px;display:flex;align-items:center;gap:12px}
-  .scorebig{font-size:30px;font-weight:800;color:var(--gold)}
-  .scorecap{font-size:11px;color:var(--muted);max-width:200px}
-  .thesis{margin-top:10px;font-size:12.5px;color:#cdd9ea;background:#0d1422;border:1px solid var(--line);border-radius:10px;padding:9px 11px}
-  .thesis b{color:var(--gold)}
-  .footer{padding:14px 28px 40px;color:var(--muted);font-size:12px;line-height:1.6;border-top:1px solid var(--line);margin-top:10px}
-  .expert{margin:0 28px 20px;background:linear-gradient(180deg,#101829,#0c1320);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
-  .expert h2{margin:0 0 10px;font-size:16px;color:var(--gold)}
-  .expert .col{font-size:13px;color:#cdd9ea;line-height:1.55}
-  .expert .col h3{font-size:13.5px;color:var(--accent);margin:12px 0 4px}
-  .loading{padding:60px;text-align:center;color:var(--muted)}
-  .err{padding:30px;color:var(--red);font-size:14px}
-  button{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:8px 14px;font-weight:600;cursor:pointer}
-  .legend{font-size:11px;color:var(--muted);margin-top:6px}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;font-size:13px;line-height:1.4}
+  a{color:var(--blue)}
+  /* Top bar */
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 26px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0c1422,#070b12)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .dot{width:11px;height:11px;border-radius:3px;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+  .brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.5px}
+  .brand h1 b{color:var(--gold)}
+  .brand .sub{font-size:11px;color:var(--muted)}
+  .statuspane{display:flex;gap:18px;align-items:center;font-size:12px}
+  .pill{display:flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2)}
+  .live{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  button{background:var(--panel2);color:var(--txt);border:1px solid var(--line2);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--gold);color:var(--gold)}
+  /* KPI strip */
+  .kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  .kpi{background:var(--panel);padding:13px 16px}
+  .kpi .k{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
+  .kpi .v{font-size:18px;font-weight:700;margin-top:4px}
+  .kpi .v small{font-size:11px;color:var(--muted);font-weight:400}
+  /* Layout */
+  .wrap{display:grid;grid-template-columns:1fr 360px;gap:1px;background:var(--line)}
+  .main{background:var(--bg);padding:18px 22px}
+  .side{background:var(--bg);padding:18px 18px;display:flex;flex-direction:column;gap:18px}
+  .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center}
+  .section-title b{color:var(--gold)}
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  thead th{position:sticky;top:0;background:#0b1320;color:var(--dim);font-weight:600;text-align:right;padding:9px 10px;border-bottom:1px solid var(--line2);font-size:11px;text-transform:uppercase;letter-spacing:.4px;cursor:default}
+  thead th:first-child,tbody td:first-child{text-align:left}
+  thead th.l{text-align:left}
+  tbody td{padding:9px 10px;text-align:right;border-bottom:1px solid #121b29}
+  tbody tr:hover{background:#0e1726}
+  .sym{font-weight:700;font-size:13.5px}
+  .sym small{display:block;color:var(--dim);font-size:10px;font-weight:400}
+  .rank{color:var(--dim);font-size:11px;width:24px}
+  .up{color:var(--green)}.down{color:var(--red)}
+  .bar{height:6px;border-radius:4px;background:#16202f;position:relative;overflow:hidden;min-width:54px}
+  .bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+  .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);color:var(--muted)}
+  .tag.hi{color:var(--gold);border-color:var(--gold)}
+  .tag.lo{color:var(--blue);border-color:var(--blue)}
+  .scorecell{font-weight:700;font-size:14px;color:var(--gold2)}
+  /* detail panel */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card h3{margin:0 0 10px;font-size:13px;color:var(--gold)}
+  .metric-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed #16202f;font-size:12px}
+  .metric-row span:first-child{color:var(--muted)}
+  .metric-row b{font-weight:600}
+  /* expert panels */
+  .expert{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:12px}
+  .expert h3{margin:0 0 8px;font-size:13px;color:var(--gold)}
+  .expert h4{margin:10px 0 4px;font-size:11.5px;color:var(--blue);text-transform:uppercase;letter-spacing:.5px}
+  .expert table{font-size:11.5px}
+  .expert td,.expert th{padding:4px 6px;border-bottom:1px solid #121b29}
+  /* legend / footer */
+  .footer{padding:16px 26px 60px;color:var(--dim);font-size:11px;line-height:1.7;border-top:1px solid var(--line);margin-top:1px;background:var(--panel2)}
+  .footer b{color:var(--muted)}
+  .loading{padding:50px;text-align:center;color:var(--muted)}
+  .err{padding:26px;color:var(--red)}
+  .sel{outline:1px solid var(--gold);background:#0e1726!important}
+  /* plataformas */
+  a.plat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 13px;border:1px solid var(--line2);border-radius:9px;background:var(--panel2);text-decoration:none;color:var(--txt);transition:.15s}
+  a.plat:hover{border-color:var(--gold);background:#0e1726;transform:translateY(-1px)}
+  a.plat span{font-size:11.5px;color:var(--muted)}
+  a.plat span b{color:var(--txt);font-size:13px}
+  a.plat i{font-style:normal;font-size:10.5px;color:var(--gold);white-space:nowrap}
 </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>⚡ Inversión <span>Digital</span> — Top 10 en Tiempo Real</h1>
-    <div class="sub">Análisis cuantitativo · asimetría riesgo/beneficio · liquidez alta (salida rápida) · bajo tamaño de posición</div>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="dot"></div>
+    <div>
+      <h1>QUANT<b>TERMINAL</b> · Inversión Digital</h1>
+      <div class="sub">Top 10 en tiempo real · score asimétrico riesgo/beneficio · liquidez para salida rápida</div>
+    </div>
   </div>
-  <div class="meta">
-    <div><span class="live"></span><span id="status">Conectando…</span></div>
-    <div id="clock"></div>
-    <div style="margin-top:6px"><button onclick="load()">↻ Actualizar</button></div>
+  <div class="statuspane">
+    <div class="pill"><span class="live"></span><span id="status">Conectando…</span></div>
+    <div class="pill" id="clock">—</div>
+    <button onclick="load()">↻ Refrescar</button>
   </div>
-</header>
+</div>
 
-<div id="app" class="loading">Cargando datos reales del mercado…</div>
+<div class="kpis" id="kpis">
+  <div class="kpi"><div class="k">Universo</div><div class="v" id="kU">—</div></div>
+  <div class="kpi"><div class="k">Activos rankeados</div><div class="v" id="kR">—</div></div>
+  <div class="kpi"><div class="k">Volumen total 24h</div><div class="v" id="kV">—</div></div>
+  <div class="kpi"><div class="k">Score máx</div><div class="v" id="kS">—</div></div>
+  <div class="kpi"><div class="k">Momentum medio (z)</div><div class="v" id="kM">—</div></div>
+  <div class="kpi"><div class="k">Riesgo medio</div><div class="v" id="kRisk">—</div></div>
+  <div class="kpi"><div class="k">Liquidez media</div><div class="v" id="kLiq">—</div></div>
+</div>
 
-<div class="expert" id="expertPanel">
-  <h2>🧠 Dictamen de los Expertos (bajo mando del Jefe Analista)</h2>
+<div class="wrap">
+  <div class="main">
+    <div class="section-title"><span>📈 Chart lineal en tiempo real <b>· sesión en vivo</b> · un punto cada 60s</span><span id="rtStat">esperando primer tick…</span></div>
+    <div class="rtchart-wrap">
+      <canvas id="rtCanvas" width="1200" height="240" style="width:100%;height:240px;background:#0a1019;border:1px solid var(--line);border-radius:9px"></canvas>
+      <div id="rtLegend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+    </div>
 
-  <div class="col">
-    <h3>📈 Experto en Ciencias de Datos — Ranking cuantitativo validado</h3>
-    <p style="font-size:12px;color:#9fb3cc">Score corregido: momentum z-score (0.50) + liquidez para salida rápida (0.35) + sesgo de crecimiento (0.15). Universo filtrado: volumen ≥ $10M y <b>sin stablecoins</b> (USDT/USDC no crecen el capital).</p>
-    <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-      <tr style="color:var(--gold);text-align:left"><th>#</th><th>Activo</th><th>Precio</th><th>Score</th></tr>
-      <tr><td>1</td><td>FIGR_HELOC</td><td>$1.04</td><td>63.3</td></tr>
-      <tr><td>2</td><td>ETH</td><td>$1,875</td><td>62.8</td></tr>
-      <tr><td>3</td><td>BTC</td><td>$63,377</td><td>62.7</td></tr>
-      <tr><td>4</td><td>TAO</td><td>$199.67</td><td>59.9</td></tr>
-      <tr><td>5</td><td>TRX</td><td>$0.3357</td><td>59.7</td></tr>
-      <tr><td>6</td><td>XMR</td><td>$390.95</td><td>59.7</td></tr>
-      <tr><td>7</td><td>BNB</td><td>$610</td><td>58.9</td></tr>
-      <tr><td>8</td><td>XAUT</td><td>$4,384</td><td>58.0</td></tr>
-      <tr><td>9</td><td>MNT</td><td>$0.457</td><td>56.7</td></tr>
-      <tr><td>10</td><td>PAXG</td><td>$4,399</td><td>56.2</td></tr>
-    </table>
-    <p style="font-size:11.5px;color:#8aa0bd;margin-top:8px"><b>Limitación:</b> volatilidad es proxy (|7d|+0.5|30d|), no serie histórica completa. Sesgo de supervivencia: solo activos top-100.</p>
+    <div class="section-title" style="margin-top:18px"><span>📊 Ranking cuantitativo <b>· Top 10</b> · clic en una fila para ver detalle</span><span id="sorttag">orden: score final ↓</span></div>
+    <div id="tbl"></div>
   </div>
 
-  <div class="col">
-    <h3>💼 Experto en Inversión Digital — Dictamen con regla de salida</h3>
-    <p style="font-size:12px;color:#9fb3cc">"Ganar mucho y rápido sin riesgo" <b>no existe</b>. "Recuperar rápido" = alta liquidez + momentum + posición pequeña (≤1-2% por nombre).</p>
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <tr style="color:var(--gold);text-align:left"><th>Activo</th><th>Tesis</th><th>Salida (stop/obj)</th></tr>
-      <tr><td><b>OKB</b></td><td>Ruptura máximos, 30d +22%</td><td>-8% / +15%</td></tr>
-      <tr><td><b>XMR</b></td><td>Refugio privado, baja correlación</td><td>-7% / +15%</td></tr>
-      <tr><td><b>MNT</b></td><td>Layer-2, catalizador ecosistema</td><td>-10% / +18%</td></tr>
-      <tr><td><b>LINK</b></td><td>Oracle líquido, 30d +10.8%</td><td>-8% / +12%</td></tr>
-      <tr><td><b>ADA</b></td><td>Rebote tras pullback 7d -4.6%</td><td>-9% / +14%</td></tr>
-      <tr><td><b>PAXG</b></td><td>Oro tokenizado, downside limitado</td><td>-3% / +6%</td></tr>
-      <tr><td><b>BNB</b></td><td>Blue chip de exchange</td><td>-6% / +10%</td></tr>
-      <tr><td><b>ETH</b></td><td>Reserva cripto, salida inmediata</td><td>-7% / +12%</td></tr>
-      <tr><td><b>LTC</b></td><td>Plata digital líquida</td><td>-6% / +8%</td></tr>
-      <tr><td><b>TRX</b></td><td>Estable, baja volatilidad</td><td>-4% / +6%</td></tr>
-    </table>
-    <p style="font-size:11.5px;color:#8aa0bd;margin-top:8px"><b>Discrepancia honesta:</b> el experto en datos rankeó OKB/XMR/MNT arriba por momentum bruto; el dashboard les da menos peso por su volatilidad (riesgo). Diversifica en 4-6, usa stop siempre. <b>No es asesoría financiera regulada.</b></p>
+  <div class="side">
+    <div class="card" id="detail">
+      <h3>🔍 Detalle del activo <span style="float:right;font-size:11px;color:var(--muted);font-weight:400">chart 24h · datos reales</span></h3>
+      <div id="detailBody"><div style="color:var(--muted)">Selecciona una fila de la tabla.</div></div>
+      <canvas id="chartCanvas" width="640" height="220" style="width:100%;height:220px;margin-top:12px;display:none;background:#0a1019;border:1px solid var(--line);border-radius:9px"></canvas>
+      <div id="chartLoad" style="display:none;color:var(--dim);font-size:11px;margin-top:8px">⏳ Cargando serie 24h…</div>
+    </div>
+
+    <div class="expert">
+      <h3>📈 Experto en Ciencias de Datos</h3>
+      <p style="color:var(--muted);font-size:11.5px">Score = 0.50·asimetría(z) + 0.35·liquidez + 0.15·sesgo crecimiento. Momentum z-score pesos 0.4/0.3/0.2/0.1 (24h/7d/30d/1h). Riesgo = volatilidad proxy |7d|+0.5|30d|.</p>
+      <div class="metric-row"><span>Proxy volatilidad</span><b>|7d%|+0.5·|30d%|</b></div>
+      <div class="metric-row"><span>Sesgo de superfivencia</span><b>top-100 cap</b></div>
+      <div class="metric-row"><span>Limitación</span><b style="color:var(--red)">vol proxy, no serie</b></div>
+    </div>
+
+    <div class="expert">
+      <h3>💼 Experto en Inversión Digital</h3>
+      <h4>Dictamen (regla de salida)</h4>
+      <table>
+        <tr><th class="l">Activo</th><th>Stop</th><th>Obj</th></tr>
+        <tr><td class="l"><b>OKB</b></td><td>-8%</td><td>+15%</td></tr>
+        <tr><td class="l"><b>XMR</b></td><td>-7%</td><td>+15%</td></tr>
+        <tr><td class="l"><b>MNT</b></td><td>-10%</td><td>+18%</td></tr>
+        <tr><td class="l"><b>LINK</b></td><td>-8%</td><td>+12%</td></tr>
+        <tr><td class="l"><b>ADA</b></td><td>-9%</td><td>+14%</td></tr>
+        <tr><td class="l"><b>PAXG</b></td><td>-3%</td><td>+6%</td></tr>
+        <tr><td class="l"><b>BNB</b></td><td>-6%</td><td>+10%</td></tr>
+        <tr><td class="l"><b>ETH</b></td><td>-7%</td><td>+12%</td></tr>
+        <tr><td class="l"><b>LTC</b></td><td>-6%</td><td>+8%</td></tr>
+        <tr><td class="l"><b>TRX</b></td><td>-4%</td><td>+6%</td></tr>
+      </table>
+      <p style="color:var(--dim);font-size:11px;margin-top:8px">"Ganar mucho y rápido sin riesgo" <b>no existe</b>. ≤1-2% capital por nombre. No es asesoría financiera.</p>
+    </div>
+
+    <div class="expert">
+      <h3>🔗 Plataformas para invertir</h3>
+      <p style="color:var(--muted);font-size:11.5px">Rankeadas por regulación MX, liquidez y monto mínimo. ✅ = enlace verificado vivo; ◐ = existe pero bloquea bots (abre desde tu navegador).</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        <a class="plat" href="https://bitso.com" target="_blank" rel="noopener"><span><b>Bitso</b> · regulada MX (SPI), fondeo en pesos, ideal para empezar</span><i>✅ bitso.com</i></a>
+        <a class="plat" href="https://www.binance.com" target="_blank" rel="noopener"><span><b>Binance</b> · mayor liquidez global, comisiones bajas</span><i>✅ binance.com</i></a>
+        <a class="plat" href="https://www.kraken.com" target="_blank" rel="noopener"><span><b>Kraken</b> · regulada US/UE, segura, buen soporte</span><i>✅ kraken.com</i></a>
+        <a class="plat" href="https://www.coinbase.com" target="_blank" rel="noopener"><span><b>Coinbase</b> · cotiza en bolsa (NASDAQ), muy regulada</span><i>◐ coinbase.com</i></a>
+        <a class="plat" href="https://volabit.com" target="_blank" rel="noopener"><span><b>Volabit</b> · mexicana, ventanilla y retiro en OXXO</span><i>◐ volabit.com</i></a>
+      </div>
+      <p style="color:var(--dim);font-size:10.5px;margin-top:9px">Ninguna es recomendación de compra. Compara comisiones (maker/taker ~0.1-1%) y verifica KYC/regulación antes de fondear. El analista no recibe comisión de estas plataformas.</p>
+    </div>
   </div>
 </div>
 
 <div class="footer">
-  <b>Metodología (Experto en Ciencias de Datos):</b> momentum compuesto z-score (pesos 0.4/0.3/0.2/0.1 para 24h/7d/30d/1h), volatilidad proxy = |7d|+0.5|30d|, riesgo(1-10)=10·vol/max(vol), ratio asimétrico=Sharpe-like (momentum/(vol+ε)), liquidez=log10(volumen) normalizado. Score final = 0.5·asimetría + 0.3·liquidez + 0.2·(1−riesgo).
-  Filtro: volumen 24h ≥ $10M. Datos en vivo vía CoinGecko.
+  <b>Metodología completa.</b> Universo: top-100 por capitalización con volumen 24h ≥ $10M, <b>excluyendo stablecoins</b> (no crecen el capital — detectado y corregido por el Experto en Datos: dominaban el score original por vol≈0).
+  Momentum compuesto z-score = 0.4·z(24h)+0.3·z(7d)+0.2·z(30d)+0.1·z(1h) sobre el universo. Volatilidad proxy = |7d%|+0.5·|30d%|. Riesgo(1-10)=10·vol/max(vol). Asimetría Sharpe-like = momentum/(vol+ε), normalizada min-max. Liquidez = log10(volumen) normalizada.
+  Score final = 0.50·asimetría + 0.35·liquidez + 0.15·sesgo(momentum crudo). Datos vivos: CoinGecko cada 60s.
   <br><br>
-  <b>Aviso:</b> Esto es análisis cuantitativo, NO asesoría financiera regulada. "Rápida recuperación" = alta liquidez (puedes vender en segundos) + momentum positivo; no garantiza ganancia. Invertir poco = posición pequeña (≤5-10% del capital). Cripto es volátil: puede perderse el capital.
+  <b>⚠ Aviso:</b> análisis cuantitativo, <b>NO asesoría financiera regulada</b>. "Rápida recuperación" = alta liquidez (salida en segundos) + momentum + posición pequeña. Cripto es volátil: puedes perder el capital. El score no es infalible — evalúa liquidez de rotación, no solo volumen absoluto.
 </div>
 
 <script>
 const API = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&price_change_percentage=1h,24h,7d,30d";
-const pct = (x)=> (x==null?0:x);
+const STABLE = new Set(['usdt','usdc','dai','ust','ustc','tusd','fdusd','usdd','usds','usd1','usdg','usde','pyusd','rlusd','gusd','busd','frax','lusd','susd','usdp','usdn','musd','usdx']);
+const pct = x => (x==null?0:x);
 
-function zscores(arr, key){
-  const vals = arr.map(d=>d[key]);
-  const n = vals.length;
-  const mean = vals.reduce((a,b)=>a+b,0)/n;
-  const sd = Math.sqrt(vals.reduce((a,b)=>a+(b-mean)**2,0)/n) || 1;
-  return arr.map(d=>(d[key]-mean)/sd);
-}
+function zscores(arr,key){const v=arr.map(d=>d[key]||0);const n=v.length;const m=v.reduce((a,b)=>a+b,0)/n;const s=Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/n)||1;return arr.map(d=>(d[key]-m)/s);}
+
+let CURRENT=[], SELECTED=null;
 
 async function load(){
-  const app = document.getElementById('app');
-  document.getElementById('status').textContent = "Descargando…";
-  app.className='loading'; app.textContent='Descargando datos reales del mercado…';
+  const tbl=document.getElementById('tbl');
+  document.getElementById('status').textContent="Descargando…";
+  tbl.innerHTML='<div class="loading">Descargando datos reales del mercado…</div>';
   let data;
   try{
-    const r = await fetch(API, {cache:'no-store'});
+    const r=await fetch(API,{cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    data = await r.json();
+    data=await r.json();
   }catch(e){
     document.getElementById('status').textContent="Error";
-    app.className='err'; app.innerHTML='⚠ No se pudo conectar a CoinGecko en vivo ('+e.message+'). Revisa tu conexión o CORS.';
+    tbl.innerHTML='<div class="err">⚠ No se pudo conectar a CoinGecko en vivo ('+e.message+'). Revisa conexión/CORS.</div>';
     return;
   }
-  // filtro liquidez + exclusion de stablecoins (efectivo, no crecimiento)
-  const STABLE = new Set(['usdt','usdc','dai','ust','ustc','tusd','fdusd','usdd','usds','usd1','usdg','usde','pyusd','rlusd','gusd','busd','frax','lusd','susd','usdp','usdn','musd','usdx']);
-  let uni = data.filter(d => (d.total_volume||0) >= 10_000_000 && !STABLE.has((d.symbol||'').toLowerCase()));
-
-  // z-scores
-  const z24 = zscores(uni,'price_change_percentage_24h_in_currency');
-  const z7  = zscores(uni,'price_change_percentage_7d_in_currency');
-  const z30 = zscores(uni,'price_change_percentage_30d_in_currency');
-  const z1  = zscores(uni,'price_change_percentage_1h_in_currency');
-
-  const volArr = uni.map(d=> Math.abs(pct(d.price_change_percentage_7d_in_currency)) + 0.5*Math.abs(pct(d.price_change_percentage_30d_in_currency)));
-  const maxVol = Math.max(...volArr, 0.0001);
-  const liqArr = uni.map(d=> Math.log10(d.total_volume||1));
-  const liqMin = Math.min(...liqArr), liqMax = Math.max(...liqArr);
-  const asymArr = uni.map((d,i)=>{
-    const m = 0.4*z24[i] + 0.3*z7[i] + 0.2*z30[i] + 0.1*z1[i];
-    return m/(volArr[i]+0.001);
+  let uni=data.filter(d=>(d.total_volume||0)>=10e6 && !STABLE.has((d.symbol||'').toLowerCase()));
+  const z24=zscores(uni,'price_change_percentage_24h_in_currency');
+  const z7=zscores(uni,'price_change_percentage_7d_in_currency');
+  const z30=zscores(uni,'price_change_percentage_30d_in_currency');
+  const z1=zscores(uni,'price_change_percentage_1h_in_currency');
+  const vol=uni.map(d=>Math.abs(pct(d.price_change_percentage_7d_in_currency))+0.5*Math.abs(pct(d.price_change_percentage_30d_in_currency)));
+  const mv=Math.max(...vol,0.0001);
+  const liq=uni.map(d=>Math.log10(d.total_volume||1));
+  const lmin=Math.min(...liq),lmax=Math.max(...liq);
+  const asym=uni.map((d,i)=>(0.4*z24[i]+0.3*z7[i]+0.2*z30[i]+0.1*z1[i])/(vol[i]+0.001));
+  const aMin=Math.min(...asym),aMax=Math.max(...asym);
+  const scored=uni.map((d,i)=>{
+    const m=0.4*z24[i]+0.3*z7[i]+0.2*z30[i]+0.1*z1[i];
+    const risk=10*vol[i]/mv;
+    const rot=(d.total_volume||0)/(d.market_cap||1); // vol/mcap = liquidez de giro
+    const finalScore=0.50*((asym[i]-aMin)/((aMax-aMin)||1))+0.35*((liq[i]-lmin)/((lmax-lmin)||1))+0.15*(m/(Math.abs(m)+1));
+    return {...d,m,vol:vol[i],risk,rot,finalScore,score100:finalScore*100};
   });
-  const aMin=Math.min(...asymArr), aMax=Math.max(...asymArr);
-
-  const scored = uni.map((d,i)=>{
-    const m = 0.4*z24[i] + 0.3*z7[i] + 0.2*z30[i] + 0.1*z1[i];
-    const risk = 10*volArr[i]/maxVol;
-    const asymNorm = (asymArr[i]-aMin)/((aMax-aMin)||1);
-    const liqNorm = (liqArr[i]-liqMin)/((liqMax-liqMin)||1);
-    const riskNorm = risk/10;
-    // score final: momentum (Sharpe) domina, liquidez para salida rapida, momentum crudo como sesgo de crecimiento
-    const finalScore = 0.50*asymNorm + 0.35*liqNorm + 0.15*(m/(Math.abs(m)+1));
-    return {...d, momentum:m, vol:volArr[i], risk, asymNorm, liqNorm, finalScore};
-  });
-
-  scored.sort((a,b)=> b.finalScore - a.finalScore);
-  const top = scored.slice(0,10);
-
-  render(top);
-  document.getElementById('status').textContent = "En vivo · "+top.length+" activos";
-  document.getElementById('clock').textContent = new Date().toLocaleString('es-MX');
+  scored.sort((a,b)=>b.finalScore-a.finalScore);
+  CURRENT=scored;
+  renderKPIs(scored,uni.length);
+  renderTable(scored.slice(0,10));
+  pushRT(scored);
+  drawRT();
+  document.getElementById('status').textContent="En vivo · "+scored.length+" activos";
+  document.getElementById('clock').textContent=new Date().toLocaleString('es-MX');
 }
 
-function render(top){
-  const app = document.getElementById('app');
-  app.className='grid';
-  app.innerHTML = top.map((d,i)=>{
-    const c24 = pct(d.price_change_percentage_24h_in_currency);
-    const c7  = pct(d.price_change_percentage_7d_in_currency);
-    const cls = c24>=0?'up':'down';
-    const arrow = c24>=0?'▲':'▼';
-    const riskColor = d.risk>6?'var(--red)':(d.risk>3?'var(--gold)':'var(--green)');
-    const liqPct = Math.round(d.liqNorm*100);
-    const asyPct = Math.round(d.asymNorm*100);
-    return `
-    <div class="card ${i===0?'r1':''}">
-      <div class="rank">#${i+1}</div>
-      <div class="sym">${d.symbol.toUpperCase()} <span style="font-size:12px;color:var(--muted)">${d.market_cap_rank?('· #'+d.market_cap_rank+' cap'):''}</span></div>
-      <div class="name">${d.name}</div>
-      <div class="price">$${d.current_price.toLocaleString('en-US',{maximumFractionDigits: d.current_price<1?4:2})}</div>
-      <div class="row"><b>24h</b><span class="${cls}">${arrow} ${c24.toFixed(2)}%</span></div>
-      <div class="row"><b>7d</b><span class="${c7>=0?'up':'down'}">${c7>=0?'▲':'▼'} ${c7.toFixed(2)}%</span></div>
-      <div class="row"><b>Volumen 24h</b><span>$${(d.total_volume/1e9).toFixed(2)}B</span></div>
-      <div class="row"><b>Cap. mercado</b><span>$${(d.market_cap/1e9).toFixed(2)}B</span></div>
-      <div class="bars">
-        <div class="barlabel"><span>Riesgo (1-10)</span><span>${(d.risk).toFixed(1)}</span></div>
-        <div class="bar"><i style="width:${d.risk*10}%;background:${riskColor}"></i></div>
-        <div class="barlabel"><span>Liquidez (salida rápida)</span><span>${liqPct}%</span></div>
-        <div class="bar"><i style="width:${liqPct}%;background:var(--accent)"></i></div>
-        <div class="barlabel"><span>Asimetría riesgo/beneficio</span><span>${asyPct}%</span></div>
-        <div class="bar"><i style="width:${asyPct}%;background:var(--gold)"></i></div>
-      </div>
-      <div class="scorebox">
-        <div class="scorebig">${(d.finalScore*100).toFixed(1)}</div>
-        <div class="scorecap">Score final (0-100). Alto = mejor asimetría: beneficio potencial alto vs riesgo y liquidez para salir ya.</div>
-      </div>
-      <div class="thesis"><b>Tesis:</b> ${thesis(d, i)}</div>
-    </div>`;
-  }).join('');
+function renderKPIs(scored,nUni){
+  const volTot=scored.reduce((a,d)=>a+(d.total_volume||0),0);
+  const momAvg=scored.slice(0,10).reduce((a,d)=>a+d.m,0)/10;
+  const riskAvg=scored.slice(0,10).reduce((a,d)=>a+d.risk,0)/10;
+  const liqAvg=scored.slice(0,10).reduce((a,d)=>a+(Math.log10(d.total_volume||1)),0)/10;
+  document.getElementById('kU').textContent=nUni;
+  document.getElementById('kR').textContent='10 / '+scored.length;
+  document.getElementById('kV').textContent='$'+(volTot/1e9).toFixed(1)+'B';
+  document.getElementById('kS').textContent=scored[0].score100.toFixed(1);
+  document.getElementById('kM').textContent=(momAvg>=0?'+':'')+momAvg.toFixed(2);
+  document.getElementById('kM').className='v '+(momAvg>=0?'up':'down');
+  document.getElementById('kRisk').textContent=riskAvg.toFixed(1)+' /10';
+  document.getElementById('kLiq').textContent=liqAvg.toFixed(2);
 }
 
-function thesis(d, i){
-  const c24 = pct(d.price_change_percentage_24h_in_currency);
-  const c7 = pct(d.price_change_percentage_7d_in_currency);
-  const riskWord = d.risk>6?'alto riesgo':(d.risk>3?'riesgo medio':'riesgo bajo');
-  if(i===0) return `Mejor asimetría del universo: momentum ${c24>=0?'positivo':'negativo'} con liquidez profunda ($${ (d.total_volume/1e9).toFixed(1) }B). Posición sugerida: 5% del capital, stop -8%.`;
-  if(c7>0 && c24>=0) return `Tendencia sana (7d y 24h al alza). ${riskWord}. Entrada escalonada 3-5% del capital; no persigas la suba.`;
-  if(c7<0 && c24>=0) return `Rebote de corto plazo dentro de corrección de 7d. ${riskWord}: solo swing corto, salida en 24-48h.`;
-  if(c7>0 && c24<0) return `Toma de ganancias intradía tras rally de 7d. ${riskWord}: espera retroceso antes de entrar.`;
-  return `Momentum débil. ${riskWord}: evita o usa solo como cobertura con posición mínima (2%).`;
+function bar(pct,color){return '<div class="bar"><i style="width:'+Math.max(2,Math.min(100,pct))+'%;background:'+color+'"></i></div>';}
+
+function renderTable(top){
+  const maxScore=Math.max(...top.map(d=>d.score100));
+  let html='<table><thead><tr>'+
+    '<th class="l">#</th><th class="l">Activo</th><th>Precio</th><th>24h</th><th>7d</th><th>30d</th>'+
+    '<th>Mom (z)</th><th>Riesgo</th><th>Rotación</th><th>Liquidez</th><th>Score</th></tr></thead><tbody>';
+  top.forEach((d,i)=>{
+    const c24=pct(d.price_change_percentage_24h_in_currency);
+    const c7=pct(d.price_change_percentage_7d_in_currency);
+    const c30=pct(d.price_change_percentage_30d_in_currency);
+    const riskColor=d.risk>6?'var(--red)':(d.risk>3?'var(--gold)':'var(--green)');
+    const rotPct=Math.min(100,d.rot*1000); // vol/mcap escalado para la barra
+    html+='<tr data-i="'+i+'" onclick="selectRow('+i+')">'+
+      '<td class="rank">'+(i+1)+'</td>'+
+      '<td class="l"><span class="sym">'+d.symbol.toUpperCase()+'<small>'+(d.market_cap_rank?('#'+d.market_cap_rank+' · cap $'+(d.market_cap/1e9).toFixed(1)+'B'):'')+'</small></span></td>'+
+      '<td>$'+d.current_price.toLocaleString('en-US',{maximumFractionDigits:d.current_price<1?4:2})+'</td>'+
+      '<td class="'+(c24>=0?'up':'down')+'">'+(c24>=0?'+':'')+c24.toFixed(2)+'%</td>'+
+      '<td class="'+(c7>=0?'up':'down')+'">'+(c7>=0?'+':'')+c7.toFixed(2)+'%</td>'+
+      '<td class="'+(c30>=0?'up':'down')+'">'+(c30>=0?'+':'')+c30.toFixed(2)+'%</td>'+
+      '<td>'+(d.m>=0?'+':'')+d.m.toFixed(2)+'</td>'+
+      '<td>'+bar(d.risk*10,riskColor)+' <span style="font-size:11px">'+d.risk.toFixed(1)+'</span></td>'+
+      '<td>'+bar(rotPct,'var(--blue)')+' <span style="font-size:11px">'+(d.rot*100).toFixed(2)+'%</span></td>'+
+      '<td>'+bar(((Math.log10(d.total_volume||1)-8)/4)*100,'var(--gold)')+'</td>'+
+      '<td class="scorecell">'+d.score100.toFixed(1)+'</td>'+
+    '</tr>';
+  });
+  html+='</tbody></table>';
+  document.getElementById('tbl').innerHTML=html;
+  if(SELECTED!=null) document.querySelector('tr[data-i="'+SELECTED+'"]')?.classList.add('sel');
+}
+
+// ---- Chart en tiempo real (serie 24h vía /market_chart, CORS abierto) ----
+let CHART_ID=null;
+async function drawChart(coinId, currentPrice){
+  const cv=document.getElementById('chartCanvas');
+  const ld=document.getElementById('chartLoad');
+  if(!coinId){cv.style.display='none';ld.style.display='none';return;}
+  CHART_ID=coinId;
+  cv.style.display='block';ld.style.display='block';
+  let series;
+  try{
+    const r=await fetch("https://api.coingecko.com/api/v3/coins/"+coinId+"/market_chart?vs_currency=usd&days=1&interval=hourly",{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    series=(j.prices||[]).map(p=>p[1]);
+    if(!series.length) throw new Error('sin datos');
+  }catch(e){ ld.textContent='⚠ chart no disponible ('+e.message+')'; cv.style.display='none'; return; }
+  ld.style.display='none';
+  // media móvil 7
+  const ma=series.map((_,i)=>{const s=series.slice(Math.max(0,i-6),i+1);return s.reduce((a,b)=>a+b,0)/s.length;});
+  const min=Math.min(...series), max=Math.max(...series), pad=(max-min)*0.12||1;
+  const W=cv.width,H=cv.height,padB=22,padT=10;
+  const x=i=> i/(series.length-1)*(W-2)+1;
+  const y=v=> padT+(1-(v-(min-pad))/(max+pad-(min-pad)))*(H-padB-padT);
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle='#16202f';ctx.lineWidth=1;
+  for(let g=0;g<=4;g++){const yy=padT+g*(H-padB-padT)/4;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();}
+  // área
+  const up=series[series.length-1]>=series[0];
+  const col=up?'#2dd4a7':'#ff6b6b';
+  ctx.beginPath();ctx.moveTo(x(0),y(series[0]));
+  series.forEach((v,i)=>ctx.lineTo(x(i),y(v)));
+  ctx.lineTo(x(series.length-1),H-padB);ctx.lineTo(x(0),H-padB);ctx.closePath();
+  const grad=ctx.createLinearGradient(0,padT,0,H-padB);grad.addColorStop(0,up?'rgba(45,212,167,.28)':'rgba(255,107,107,.28)');grad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grad;ctx.fill();
+  // línea precio
+  ctx.beginPath();ctx.moveTo(x(0),y(series[0]));series.forEach((v,i)=>ctx.lineTo(x(i),y(v)));ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+  // media móvil
+  ctx.beginPath();ma.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));ctx.strokeStyle='#C5A059';ctx.lineWidth=1.4;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  // eje Y labels
+  ctx.fillStyle='#56697f';ctx.font='10px monospace';ctx.textAlign='left';
+  ctx.fillText('$'+(max).toFixed(max<1?4:0),4,padT+9);
+  ctx.fillText('$'+(min).toFixed(min<1?4:0),4,H-padB+2);
+  // marca precio actual
+  if(currentPrice){const ly=y(currentPrice);ctx.fillStyle=col;ctx.beginPath();ctx.arc(x(series.length-1),ly,3,0,7);ctx.fill();}
+}
+
+// ---- Chart lineal en tiempo real (sesión: 1 punto por fetch/60s) ----
+const RT_COLORS=['#C5A059','#5b9dff','#2dd4a7','#a78bfa','#ff6b6b','#f6c453','#4fd1c5','#f78fb3','#9ae66e','#e0bd7d'];
+let RT={}; // sym -> [precios]
+function pushRT(scored){
+  const top=scored.slice(0,10);
+  top.forEach((d,i)=>{
+    const s=d.symbol.toUpperCase();
+    if(!RT[s]) RT[s]=[];
+    RT[s].push(d.current_price);
+    if(RT[s].length>900) RT[s].shift(); // ventana ~30 min a 2s
+  });
+}
+function drawRT(){
+  const cv=document.getElementById('rtCanvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,padL=8,padR=8,padT=10,padB=18;
+  ctx.clearRect(0,0,W,H);
+  const syms=Object.keys(RT).filter(s=>RT[s].length>0);
+  if(!syms.length){ctx.fillStyle='#56697f';ctx.font='12px monospace';ctx.fillText('esperando datos…',12,30);return;}
+  // todos sobre mismo eje Y normalizado por % respecto al primer tick (base 100)
+  const series=syms.map(s=>{const b=RT[s][0]||RT[s][RT[s].length-1];return {s,base:b,data:RT[s].map(v=>v/b*100)};});
+  let gMin=Infinity,gMax=-Infinity;
+  series.forEach(se=>se.data.forEach(v=>{if(v<gMin)gMin=v;if(v>gMax)gMax=v;}));
+  if(gMax-gMin<0.1){gMax+=0.5;gMin-=0.5;}
+  const n=Math.max(...series.map(se=>se.data.length));
+  const x=i=> padL+i/(Math.max(1,n-1))*(W-padL-padR);
+  const y=v=> padT+(1-(v-gMin)/(gMax-gMin))*(H-padT-padB);
+  // grid
+  ctx.strokeStyle='#16202f';ctx.lineWidth=1;
+  for(let g=0;g<=4;g++){const yy=padT+g*(H-padT-padB)/4;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();}
+  // línea base 100
+  ctx.strokeStyle='#243349';ctx.setLineDash([3,4]);ctx.beginPath();
+  const yb=y(100);ctx.moveTo(0,yb);ctx.lineTo(W,yb);ctx.stroke();ctx.setLineDash([]);
+  series.forEach((se,si)=>{
+    ctx.beginPath();
+    se.data.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));
+    ctx.strokeStyle=RT_COLORS[si%RT_COLORS.length];ctx.lineWidth=1.6;ctx.stroke();
+  });
+  // labels eje Y (%)
+  ctx.fillStyle='#56697f';ctx.font='10px monospace';ctx.textAlign='left';
+  ctx.fillText('+'+(gMax-100).toFixed(1)+'%',4,padT+9);
+  ctx.fillText((gMin-100).toFixed(1)+'%',4,H-padB+2);
+  // leyenda
+  const lg=document.getElementById('rtLegend');
+  lg.innerHTML=series.map((se,si)=>'<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><i style="width:10px;height:3px;background:'+RT_COLORS[si%RT_COLORS.length]+';display:inline-block;border-radius:2px"></i>'+se.s+'</span>').join('');
+  document.getElementById('rtStat').textContent='ticks: '+n+' · ventana ~'+(n*60/60).toFixed(0)+' min';
+}
+
+function selectRow(i){
+  SELECTED=i;
+  document.querySelectorAll('tr.sel').forEach(t=>t.classList.remove('sel'));
+  document.querySelector('tr[data-i="'+i+'"]')?.classList.add('sel');
+  const d=CURRENT[i];
+  const c24=pct(d.price_change_percentage_24h_in_currency),c7=pct(d.price_change_percentage_7d_in_currency),c30=pct(d.price_change_percentage_30d_in_currency),c1=pct(d.price_change_percentage_1h_in_currency);
+  const tier=d.risk>6?'<span class="tag hi">ALTO RIESGO</span>':(d.risk>3?'<span class="tag">RIESGO MEDIO</span>':'<span class="tag lo">RIESGO BAJO</span>');
+  document.getElementById('detailBody').innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:baseline">'+
+      '<div><div class="sym" style="font-size:18px">'+d.symbol.toUpperCase()+' <span style="color:var(--dim);font-size:12px;font-weight:400">'+d.name+'</span></div>'+
+      '<div style="color:var(--gold2);font-size:22px;font-weight:700;margin-top:4px">$'+d.current_price.toLocaleString('en-US',{maximumFractionDigits:d.current_price<1?4:2})+'</div></div>'+
+      '<div style="text-align:right">'+tier+'</div></div>'+
+    '<div class="metric-row"><span>Precio 24h (min/max)</span><b>$'+(d.low_24h||0).toLocaleString('en-US',{maximumFractionDigits:4})+' / $'+(d.high_24h||0).toLocaleString('en-US',{maximumFractionDigits:4})+'</b></div>'+
+    '<div class="metric-row"><span>Cambio 1h / 24h / 7d / 30d</span><b class="'+(c24>=0?'up':'down')+'">'+(c1>=0?'+':'')+c1.toFixed(2)+'% · '+(c24>=0?'+':'')+c24.toFixed(2)+'% · '+(c7>=0?'+':'')+c7.toFixed(2)+'% · '+(c30>=0?'+':'')+c30.toFixed(2)+'%</b></div>'+
+    '<div class="metric-row"><span>Momentum z-score compuesto</span><b class="'+(d.m>=0?'up':'down')+'">'+(d.m>=0?'+':'')+d.m.toFixed(3)+'</b></div>'+
+    '<div class="metric-row"><span>Volatilidad proxy (riesgo)</span><b>'+d.vol.toFixed(2)+' → '+d.risk.toFixed(1)+'/10</b></div>'+
+    '<div class="metric-row"><span>Volumen 24h</span><b>$'+((d.total_volume||0)/1e9).toFixed(2)+'B</b></div>'+
+    '<div class="metric-row"><span>Capitalización</span><b>$'+((d.market_cap||0)/1e9).toFixed(1)+'B</b></div>'+
+    '<div class="metric-row"><span>Rotación vol/mcap</span><b style="color:var(--blue)">'+((d.rot||0)*100).toFixed(2)+'%</b></div>'+
+    '<div class="metric-row"><span>Score asimétrico final</span><b style="color:var(--gold2);font-size:15px">'+d.score100.toFixed(1)+' / 100</b></div>'+
+    '<div style="margin-top:10px;padding:9px 11px;background:#0a1019;border:1px solid var(--line);border-radius:9px;font-size:11.5px;color:var(--muted)">'+
+      'Veredicto: '+(d.rot<0.005?'<b style="color:var(--red)">liquidez de giro BAJA</b> — cuidado con "rápida recuperación". ':'liquidez de giro sana. ')+
+      (d.m>0?'Momentum positivo: acumulación en debilidad. ':'Momentum negativo: evitar o esperar. ')+
+      'Posición sugerida ≤2% del capital, stop -'+(d.risk>5?7:5)+'%.</div>';
+  drawChart(d.id, d.current_price);
 }
 
 load();
-setInterval(load, 60000); // refresco vivo cada 60s
+setInterval(load,2000); // refresco en tiempo real cada 2s (ojo: CoinGecko free tier ~30 req/min; si salta 429, espera al siguiente tick)
 </script>
 </body>
 </html>
