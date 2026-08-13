@@ -363,7 +363,7 @@ async function load(){
   renderKPIs(scored,uni.length);
   renderTable(scored.slice(0,10));
   pushRT(scored);
-  drawRT();
+  drawRT(true);
   document.getElementById('clock').textContent=new Date().toLocaleString('es-MX');
   connStatus();
 }
@@ -543,8 +543,8 @@ function pushRT(scored){
     if(RT[s].length>900) RT[s].shift(); // ventana ~30 min a 2s
   });
 }
-function drawRT(){
-  const cv=document.getElementById('rtCanvas');
+function drawRT(animate){
+  const cv=document.getElementById('rtCanvas');if(!cv)return;
   const ctx=cv.getContext('2d');
   const W=cv.width,H=cv.height,padL=8,padR=8,padT=10,padB=18;
   ctx.clearRect(0,0,W,H);
@@ -564,10 +564,45 @@ function drawRT(){
   // línea base 100
   ctx.strokeStyle='#243349';ctx.setLineDash([3,4]);ctx.beginPath();
   const yb=y(100);ctx.moveTo(0,yb);ctx.lineTo(W,yb);ctx.stroke();ctx.setLineDash([]);
+  // detectar tick nuevo -> animar el trazo del último segmento (estilo Google Finance)
+  if(animate && n>rtPrevLen){ rtAnimLead=0; rtPrevLen=n; rtStartAnim(); }
+  rtPrevLen=n;
+  const lead=rtEase(rtAnimLead);
   series.forEach((se,si)=>{
-    ctx.beginPath();
-    se.data.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));
-    ctx.strokeStyle=RT_COLORS[si%RT_COLORS.length];ctx.lineWidth=1.6;ctx.stroke();
+    const col=RT_COLORS[si%RT_COLORS.length];
+    const pts=se.data, count=pts.length;
+    let drawCount=count, partial=0;
+    if(si===0 && animate){ drawCount=Math.max(1,count-1); partial=lead; }
+    const pathPts=[];
+    for(let i=0;i<drawCount;i++) pathPts.push([x(i),y(pts[i])]);
+    if(partial>0 && count>1){
+      const ax=x(count-2),ay=y(pts[count-2]),bx=x(count-1),by=y(pts[count-1]);
+      pathPts.push([ax+(bx-ax)*partial, ay+(by-ay)*partial]);
+    }
+    if(!pathPts.length) return;
+    // área con degradado sólo para el líder (look Google Finance)
+    if(si===0 && pathPts.length>1){
+      ctx.beginPath();
+      ctx.moveTo(pathPts[0][0],H-padB);
+      pathPts.forEach(p=>ctx.lineTo(p[0],p[1]));
+      ctx.lineTo(pathPts[pathPts.length-1][0],H-padB);ctx.closePath();
+      const g=ctx.createLinearGradient(0,padT,0,H-padB);
+      g.addColorStop(0,'rgba(95,240,176,.22)');g.addColorStop(1,'rgba(95,240,176,0)');
+      ctx.fillStyle=g;ctx.fill();
+    }
+    // línea suave (curva)
+    ctx.beginPath();ctx.moveTo(pathPts[0][0],pathPts[0][1]);
+    for(let i=1;i<pathPts.length;i++){
+      const xp=pathPts[i-1][0],yp=pathPts[i-1][1],xq=pathPts[i][0],yq=pathPts[i][1];
+      ctx.quadraticCurveTo(xp,yp,(xp+xq)/2,(yp+yq)/2);
+    }
+    ctx.strokeStyle=col;ctx.lineWidth=si===0?2:1.4;ctx.globalAlpha=si===0?1:0.7;ctx.stroke();ctx.globalAlpha=1;
+    // punto final con glow (líder)
+    if(si===0){
+      const ex=pathPts[pathPts.length-1][0],ey=pathPts[pathPts.length-1][1];
+      ctx.beginPath();ctx.arc(ex,ey,3.5,0,7);ctx.fillStyle=col;ctx.fill();
+      ctx.beginPath();ctx.arc(ex,ey,7,0,7);ctx.fillStyle='rgba(95,240,176,.18)';ctx.fill();
+    }
   });
   // labels eje Y (%)
   ctx.fillStyle='#56697f';ctx.font='10px monospace';ctx.textAlign='left';
@@ -577,6 +612,14 @@ function drawRT(){
   const lg=document.getElementById('rtLegend');
   lg.innerHTML=series.map((se,si)=>'<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><i style="width:10px;height:3px;background:'+RT_COLORS[si%RT_COLORS.length]+';display:inline-block;border-radius:2px"></i>'+se.s+'</span>').join('');
   document.getElementById('rtStat').textContent='ticks: '+n+' · ventana ~'+(n*60/60).toFixed(0)+' min';
+}
+let rtAnimLead=1, rtAnimating=false, rtPrevLen=0;
+function rtEase(t){return t<0?0:t>1?1:t*t*(3-2*t);}
+function rtStartAnim(){
+  if(rtAnimating) return;
+  rtAnimating=true;let start=null;
+  function step(ts){ if(start===null)start=ts; const t=Math.min(1,(ts-start)/450); rtAnimLead=t; drawRT(false); if(t<1)requestAnimationFrame(step); else {rtAnimating=false;rtAnimLead=1;} }
+  requestAnimationFrame(step);
 }
 
 function selectRow(i){
