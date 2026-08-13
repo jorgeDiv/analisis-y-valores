@@ -107,6 +107,7 @@
   .ia-bn-head{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px}
   .ia-trade-lock{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
   .ia-trade-lock input[type=checkbox]{width:16px;height:16px}
+</style>
 </head>
 <body>
 
@@ -158,10 +159,12 @@
 
     <div class="expert">
       <h3>📈 Experto en Ciencias de Datos</h3>
-      <p style="color:var(--muted);font-size:11.5px">Score = 0.50·asimetría(z) + 0.35·liquidez + 0.15·sesgo crecimiento. Momentum z-score pesos 0.4/0.3/0.2/0.1 (24h/7d/30d/1h). Riesgo = volatilidad proxy |7d|+0.5|30d|.</p>
-      <div class="metric-row"><span>Proxy volatilidad</span><b>|7d%|+0.5·|30d%|</b></div>
-      <div class="metric-row"><span>Sesgo de superfivencia</span><b>top-100 cap</b></div>
-      <div class="metric-row"><span>Limitación</span><b style="color:var(--red)">vol proxy, no serie</b></div>
+      <p style="color:var(--muted);font-size:11.5px">Momentum z compuesto m = 0.4·z24h + 0.3·z7d + 0.2·z30d + 0.1·z1h. Asimetría = m ÷ (volProxy+ε). Score = 0.50·asymNorm + 0.35·liqNorm + 0.15·(m/(|m|+1)). Riesgo = 10·volProxy ÷ max(volProxy), donde volProxy = |7d%| + 0.5·|30d%|.</p>
+      <div class="metric-row"><span>Universo</span><b>top-100 cap, vol 24h ≥ $10M</b></div>
+      <div class="metric-row"><span>Exclusión</span><b>stablecoins (vol≈0 infla score)</b></div>
+      <div class="metric-row"><span>Proxy volatilidad</span><b>|7d%| + 0.5·|30d%|</b></div>
+      <div class="metric-row"><span>Sesgo de supervivencia</span><b>top-100 cap (ignora small-caps)</b></div>
+      <div class="metric-row"><span>Limitación</span><b style="color:var(--red)">vol proxy, no serie histórica</b></div>
     </div>
 
     <div class="expert">
