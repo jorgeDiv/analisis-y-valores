@@ -77,6 +77,7 @@
   .sel{outline:1px solid var(--gold);background:#0e1726!important}
   .rank1{background:#0e1a16}
   .rank1 .sym{color:var(--gold2)}
+  .metainfo td{background:#080d15}
   /* plataformas */
   a.plat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 13px;border:1px solid var(--line2);border-radius:9px;background:var(--panel2);text-decoration:none;color:var(--txt);transition:.15s}
   a.plat:hover{border-color:var(--gold);background:#0e1726;transform:translateY(-1px)}
@@ -248,8 +249,19 @@
 
 <script>
 const STABLE = new Set(['usdt','usdc','dai','ust','ustc','tusd','fdusd','usdd','usds','usd1','usdg','usde','pyusd','rlusd','gusd','busd','frax','lusd','susd','usdp','usdn','musd','usdx']);
-// metales preciosos tokenizados que suelen cotizar en Binance (oro/plata)
+// metales preciosos tokenizados que suelen cotizar en Binance (oro/plata) + descripción
 const METALS = new Set(['XAUT','PAXG','XAG','XAGT','GOLD','SILVER','AGLD','WELL']);
+const METAL_INFO = {
+  XAUT:  'Tether Gold · 1 token = 1 onza troy de oro físico custodiado',
+  PAXG:  'Pax Gold · 1 token = 1 onza troy de oro London Good Delivery',
+  XAG:   'Plata tokenizada (spot) · sigue el precio de la onza de plata',
+  XAGT:  'Plata tokenizada · exposición al precio de la plata física',
+  GOLD:  'Token de oro · exposición al precio del oro (emitido por TQQQ/otros)',
+  SILVER:'Token de plata · exposición al precio de la plata',
+  AGLD:  'Aavegotchi LAND · NO es metal (token de juego); excluido de score',
+  WELL:  'Wellfield · NO es metal (DeFi); excluido de score'
+};
+let cgMap = {}; // symbol.toUpperCase() -> coinGecko object (enriquecido en load)
 const pct = x => (x==null?0:x);
 let RATE_MXN=0; // tipo de cambio USD->MXN (vivo)
 const fmtMXN = u => (RATE_MXN? '$'+ (u*RATE_MXN).toLocaleString('es-MX',{maximumFractionDigits:u<1?2:0})+' MXN' : '—');
@@ -346,8 +358,31 @@ async function load(){
   if(data && data.length) LAST_GOOD=data;
   // MXN en paralelo (no bloquea el ranking)
   fetchMXN();
+  // poblar mapa CoinGecko para enriquecer metales (nombre/cap)
+  cgMap={}; data.forEach(d=>{ if(d.id && d.market_cap!=null) cgMap[(d.symbol||'').toUpperCase()]=d; });
   // scoring sobre lo disponible
-  let uni=data.filter(d=>!STABLE.has((d.symbol||'').toLowerCase()));
+  const scored=scoreUniverse(data);
+  CURRENT=scored;
+  renderKPIs(scored,scored.length);
+  renderTable(scored.slice(0,10));
+  await renderMetales(scored);
+  pushRT(scored);
+  drawRT(true);
+  document.getElementById('clock').textContent=new Date().toLocaleString('es-MX');
+  connStatus();
+}
+
+// Backoff: si hay fallos, espera exponencial antes del proximo tick
+function scheduleRetry(){
+  const wait=Math.min(2000*Math.pow(2,FAILS),30000);
+  clearInterval(MAIN_TIMER);
+  setTimeout(()=>{ MAIN_TIMER=setInterval(load,2000); load(); }, wait);
+}
+let MAIN_TIMER=setInterval(load,2000);
+
+// Scoring asimétrico riesgo/beneficio (reutilizable para ranking y metales)
+function scoreUniverse(data){
+  const uni=data.filter(d=>!STABLE.has((d.symbol||'').toLowerCase()));
   const has7d=uni.some(d=>d.price_change_percentage_7d_in_currency!=null);
   const z24=zscores(uni,'price_change_percentage_24h_in_currency');
   const z7=has7d?zscores(uni,'price_change_percentage_7d_in_currency'):uni.map(()=>0);
@@ -367,23 +402,8 @@ async function load(){
     return {...d,m,vol:vol[i],risk,rot,finalScore,score100:finalScore*100};
   });
   scored.sort((a,b)=>b.finalScore-a.finalScore);
-  CURRENT=scored;
-  renderKPIs(scored,uni.length);
-  renderTable(scored.slice(0,10));
-  renderMetales(scored.filter(d=>METALS.has((d.symbol||'').toUpperCase())).slice(0,5));
-  pushRT(scored);
-  drawRT(true);
-  document.getElementById('clock').textContent=new Date().toLocaleString('es-MX');
-  connStatus();
+  return scored;
 }
-
-// Backoff: si hay fallos, espera exponencial antes del proximo tick
-function scheduleRetry(){
-  const wait=Math.min(2000*Math.pow(2,FAILS),30000);
-  clearInterval(MAIN_TIMER);
-  setTimeout(()=>{ MAIN_TIMER=setInterval(load,2000); load(); }, wait);
-}
-let MAIN_TIMER=setInterval(load,2000);
 
 function renderKPIs(scored,nUni){
   const volTot=scored.reduce((a,d)=>a+(d.total_volume||0),0);
@@ -431,25 +451,35 @@ function renderTable(top){
   document.getElementById('tbl').innerHTML=html;
   if(SELECTED!=null) document.querySelector('tr[data-i="'+SELECTED+'"]')?.classList.add('sel');
 }
-function renderMetales(top){
+async function renderMetales(initial){
   const box=document.getElementById('metalesBox');
   const stat=document.getElementById('metalesStat');
-  if(!top.length){
-    box.innerHTML='<div class="err" style="font-size:12px;color:var(--dim)">⚠ No hay metales tokenizados (XAUT/PAXG/XAG) con volumen suficiente en Binance ahora. Aparecen en vivo cuando hay liquidez.</div>';
+  // construir lista: los del universo principal + completar hasta 5 con fetch dedicado
+  let list=initial.filter(d=>METALS.has((d.symbol||'').toUpperCase())).slice(0,5);
+  if(list.length<5){
+    try{
+      const extra=await fetchMetals();
+      for(const m of extra){ if(list.length>=5) break; if(!list.some(x=>x.symbol.toUpperCase()===m.symbol.toUpperCase())) list.push(m); }
+    }catch(e){ /* silencioso: usa lo que haya */ }
+  }
+  if(!list.length){
+    box.innerHTML='<div class="err" style="font-size:12px;color:var(--dim)">⚠ No hay metales tokenizados (XAUT/PAXG/XAG) listados en Binance ahora. Aparecen en vivo cuando hay liquidez.</div>';
     stat.textContent=''; return;
   }
-  const maxScore=Math.max(...top.map(d=>d.score100));
+  const maxScore=Math.max(...list.map(d=>d.score100||0));
   let html='<table><thead><tr>'+
     '<th class="l">#</th><th class="l">Metal</th><th>Precio</th><th>24h</th><th>7d</th><th>30d</th>'+
     '<th>Mom (z)</th><th>Riesgo</th><th>Score</th></tr></thead><tbody>';
-  top.forEach((d,i)=>{
+  list.forEach((d,i)=>{
+    const sym=d.symbol.toUpperCase();
     const c24=pct(d.price_change_percentage_24h_in_currency);
     const c7=pct(d.price_change_percentage_7d_in_currency);
     const c30=pct(d.price_change_percentage_30d_in_currency);
     const riskColor=d.risk>6?'var(--red)':(d.risk>3?'var(--gold)':'var(--green)');
+    const info=METAL_INFO[sym]||'';
     html+='<tr'+(i===0?' class="rank1"':'')+'>'+
       '<td class="rank">'+(i+1)+'</td>'+
-      '<td class="l"><span class="sym">'+d.symbol.toUpperCase()+'<small>'+(d.name?d.name:'')+'</small></span></td>'+
+      '<td class="l"><span class="sym">'+sym+'<small>'+(d.name?d.name:'')+'</small></span></td>'+
       '<td><div>$'+d.current_price.toLocaleString('en-US',{maximumFractionDigits:d.current_price<1?4:2})+'</div><div style="font-size:10px;color:var(--muted)">'+fmtMXN(d.current_price)+'</div></td>'+
       '<td class="'+(c24>=0?'up':'down')+'">'+(c24>=0?'+':'')+c24.toFixed(2)+'%</td>'+
       '<td class="'+(c7>=0?'up':'down')+'">'+(c7>=0?'+':'')+c7.toFixed(2)+'%</td>'+
@@ -458,10 +488,30 @@ function renderMetales(top){
       '<td>'+bar(d.risk*10,riskColor)+' <span style="font-size:11px">'+d.risk.toFixed(1)+'</span></td>'+
       '<td class="scorecell">'+d.score100.toFixed(1)+'</td>'+
     '</tr>';
+    if(info) html+='<tr class="metainfo"><td></td><td colspan="8" style="font-size:10.5px;color:var(--dim);padding:2px 10px 8px;border-bottom:1px solid #121b29">'+info+'</td></tr>';
   });
   html+='</tbody></table>';
   box.innerHTML=html;
   stat.textContent='score máx '+maxScore.toFixed(1);
+}
+// Fetch dedicado de metales en Binance (sin filtro estricto de volumen) para completar el Top 5
+async function fetchMetals(){
+  const r=await fetchJSON('https://api.binance.com/api/v3/ticker/24hr',9000);
+  if(!r.ok) throw new Error('Binance metals HTTP '+r.status);
+  const all=await r.json();
+  const rows=all.filter(x=>x.symbol.endsWith('USDT') && METALS.has(x.symbol.replace('USDT','').toUpperCase()))
+    .map(x=>({
+      symbol:x.symbol.replace('USDT',''), name:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).name||x.symbol.replace('USDT',''),
+      id:x.symbol.toLowerCase(), current_price:parseFloat(x.lastPrice),
+      market_cap:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).market_cap||null,
+      market_cap_rank:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).market_cap_rank||null,
+      total_volume:parseFloat(x.quoteVolume), high_24h:parseFloat(x.highPrice), low_24h:parseFloat(x.lowPrice),
+      price_change_percentage_24h_in_currency:parseFloat(x.priceChangePercent),
+      price_change_percentage_1h_in_currency:null,
+      price_change_percentage_7d_in_currency:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).price_change_percentage_7d_in_currency||null,
+      price_change_percentage_30d_in_currency:(cgMap[x.symbol.replace('USDT','').toUpperCase()]||{}).price_change_percentage_30d_in_currency||null
+    }));
+  return scoreUniverse(rows);
 }
 
 // ---- Chart en tiempo real (serie 24h vía /market_chart, CORS abierto) ----
