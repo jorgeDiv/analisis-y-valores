@@ -73,6 +73,12 @@
   .loading{padding:50px;text-align:center;color:var(--muted)}
   .err{padding:26px;color:var(--red)}
   .sel{outline:1px solid var(--gold);background:#0e1726!important}
+  /* plataformas */
+  a.plat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 13px;border:1px solid var(--line2);border-radius:9px;background:var(--panel2);text-decoration:none;color:var(--txt);transition:.15s}
+  a.plat:hover{border-color:var(--gold);background:#0e1726;transform:translateY(-1px)}
+  a.plat span{font-size:11.5px;color:var(--muted)}
+  a.plat span b{color:var(--txt);font-size:13px}
+  a.plat i{font-style:normal;font-size:10.5px;color:var(--gold);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -147,6 +153,19 @@
         <tr><td class="l"><b>TRX</b></td><td>-4%</td><td>+6%</td></tr>
       </table>
       <p style="color:var(--dim);font-size:11px;margin-top:8px">"Ganar mucho y rápido sin riesgo" <b>no existe</b>. ≤1-2% capital por nombre. No es asesoría financiera.</p>
+    </div>
+
+    <div class="expert">
+      <h3>🔗 Plataformas para invertir</h3>
+      <p style="color:var(--muted);font-size:11.5px">Rankeadas por regulación MX, liquidez y monto mínimo. ✅ = enlace verificado vivo; ◐ = existe pero bloquea bots (abre desde tu navegador).</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        <a class="plat" href="https://bitso.com" target="_blank" rel="noopener"><span><b>Bitso</b> · regulada MX (SPI), fondeo en pesos, ideal para empezar</span><i>✅ bitso.com</i></a>
+        <a class="plat" href="https://www.binance.com" target="_blank" rel="noopener"><span><b>Binance</b> · mayor liquidez global, comisiones bajas</span><i>✅ binance.com</i></a>
+        <a class="plat" href="https://www.kraken.com" target="_blank" rel="noopener"><span><b>Kraken</b> · regulada US/UE, segura, buen soporte</span><i>✅ kraken.com</i></a>
+        <a class="plat" href="https://www.coinbase.com" target="_blank" rel="noopener"><span><b>Coinbase</b> · cotiza en bolsa (NASDAQ), muy regulada</span><i>◐ coinbase.com</i></a>
+        <a class="plat" href="https://volabit.com" target="_blank" rel="noopener"><span><b>Volabit</b> · mexicana, ventanilla y retiro en OXXO</span><i>◐ volabit.com</i></a>
+      </div>
+      <p style="color:var(--dim);font-size:10.5px;margin-top:9px">Ninguna es recomendación de compra. Compara comisiones (maker/taker ~0.1-1%) y verifica KYC/regulación antes de fondear. El analista no recibe comisión de estas plataformas.</p>
     </div>
   </div>
 </div>
@@ -314,7 +333,7 @@ function pushRT(scored){
     const s=d.symbol.toUpperCase();
     if(!RT[s]) RT[s]=[];
     RT[s].push(d.current_price);
-    if(RT[s].length>120) RT[s].shift(); // ventana ~2h
+    if(RT[s].length>900) RT[s].shift(); // ventana ~30 min a 2s
   });
 }
 function drawRT(){
@@ -381,7 +400,7 @@ function selectRow(i){
 }
 
 load();
-setInterval(load,60000);
+setInterval(load,2000); // refresco en tiempo real cada 2s (ojo: CoinGecko free tier ~30 req/min; si salta 429, espera al siguiente tick)
 </script>
 </body>
 </html>
